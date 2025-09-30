@@ -117,9 +117,9 @@ export default function Game() {
                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
                 <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
-                    <div className="w-full max-w-2xl mx-auto">
+                    <div className="w-full max-w-6xl mx-auto">
                         <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-8 shadow-lg border border-slate-600">
-                            <div className="text-center">
+                            <div className="text-center animate-fade-in">
                                 <div className="text-6xl mb-4">🎉</div>
                                 <h1 className="font-serif text-3xl text-amber-300 mb-4">
                                     恭喜你，答对了！
@@ -127,29 +127,62 @@ export default function Game() {
                                 <p className="text-slate-300 mb-2">
                                     你在第 <span className="text-amber-300 font-bold">{currentClueIndex + 1}</span> 条线索时就猜出了正确答案
                                 </p>
+                            </div>
 
-                                <div className="mt-8 p-6 bg-slate-900/50 rounded-lg border border-slate-700">
-                                    <h2 className="font-serif text-2xl text-white mb-4">{gameData.figureName}</h2>
-                                    <p className="text-slate-300 leading-relaxed">
+                            <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                {/* 人物信息区域 */}
+                                <div className="space-y-4 animate-fade-in animation-delay-200">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                        alt="人物肖像"
+                                        className="rounded-lg object-cover w-full h-48 shadow-lg"
+                                    />
+                                    <h2 className="font-serif text-4xl text-slate-100">{gameData.figureName}</h2>
+                                    <p className="text-slate-400 text-sm leading-relaxed">
                                         艾萨克·牛顿（1643-1727）是英国物理学家、数学家、天文学家和自然哲学家。
                                         他在《自然哲学的数学原理》中提出了万有引力定律和三大运动定律，奠定了经典力学的基础，
                                         被誉为科学史上最重要的人物之一。
                                     </p>
                                 </div>
 
-                                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <button
-                                        onClick={handleRestart}
-                                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-                                    >
-                                        再玩一局
-                                    </button>
+                                {/* 线索回顾区域 */}
+                                <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col animate-fade-in animation-delay-400">
+                                    <h3 className="font-serif text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
+                                    <ol className="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 flex-grow max-h-80 clue-scrollbar">
+                                        {gameData.clues.map((clue, index) => (
+                                            <li
+                                                key={index}
+                                                className={index === currentClueIndex ? "text-amber-300 font-bold" : ""}
+                                            >
+                                                {clue}
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <div className="animate-fade-in animation-delay-600">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <Link
                                         href="/"
-                                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-center"
+                                        className="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200"
                                     >
-                                        返回首页
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                            <polyline points="9 22 9 12 15 12 15 22" />
+                                        </svg>
+                                        <span>返回主页</span>
                                     </Link>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105 shadow-lg"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                            <path d="M3 3v5h5" />
+                                        </svg>
+                                        <span>再玩一局</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -166,36 +199,70 @@ export default function Game() {
                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
                 <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
-                    <div className="w-full max-w-2xl mx-auto">
+                    <div className="w-full max-w-6xl mx-auto">
                         <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-8 shadow-lg border border-slate-600">
-                            <div className="text-center">
+                            <div className="text-center animate-fade-in">
                                 <div className="text-6xl mb-4">🤔</div>
-                                <h1 className="font-serif text-3xl text-amber-300 mb-4">
+                                <h1 className="font-serif text-3xl text-indigo-300 mb-4">
                                     {gameState === 'failed' ? '差一点就猜到了！' : '真相揭晓'}
                                 </h1>
+                                <p className="text-slate-300 mt-1">历史的画卷已然展开</p>
+                            </div>
 
-                                <div className="mt-8 p-6 bg-slate-900/50 rounded-lg border border-slate-700">
-                                    <h2 className="font-serif text-2xl text-white mb-4">{gameData.figureName}</h2>
-                                    <p className="text-slate-300 leading-relaxed">
+                            <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                {/* 人物信息区域 */}
+                                <div className="space-y-4 animate-fade-in animation-delay-200">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                        alt="人物肖像"
+                                        className="rounded-lg object-cover w-full h-48 shadow-lg"
+                                    />
+                                    <h2 className="font-serif text-4xl text-slate-100">{gameData.figureName}</h2>
+                                    <p className="text-slate-400 text-sm leading-relaxed">
                                         艾萨克·牛顿（1643-1727）是英国物理学家、数学家、天文学家和自然哲学家。
                                         他在《自然哲学的数学原理》中提出了万有引力定律和三大运动定律，奠定了经典力学的基础，
                                         被誉为科学史上最重要的人物之一。
                                     </p>
                                 </div>
 
-                                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <button
-                                        onClick={handleRestart}
-                                        className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
-                                    >
-                                        再玩一局
-                                    </button>
+                                {/* 线索回顾区域 */}
+                                <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col animate-fade-in animation-delay-400">
+                                    <h3 className="font-serif text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
+                                    <ol className="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 flex-grow max-h-80 clue-scrollbar">
+                                        {gameData.clues.map((clue, index) => (
+                                            <li
+                                                key={index}
+                                                className={index === gameData.clues.length - 1 ? "text-slate-200 font-bold" : ""}
+                                            >
+                                                {clue}
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <div className="animate-fade-in animation-delay-600">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <Link
                                         href="/"
-                                        className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 text-center"
+                                        className="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200"
                                     >
-                                        返回首页
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                            <polyline points="9 22 9 12 15 12 15 22" />
+                                        </svg>
+                                        <span>返回主页</span>
                                     </Link>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105 shadow-lg"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                                            <path d="M3 3v5h5" />
+                                        </svg>
+                                        <span>再玩一局</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>

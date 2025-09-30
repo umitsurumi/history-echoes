@@ -182,3 +182,22 @@ body {
 .input-focus-effect:focus {
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
+
+/* 线索回顾滚动条样式 */
+.clue-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.clue-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.clue-scrollbar::-webkit-scrollbar-thumb {
+  background: #4A5568; /* slate-600 */
+  border-radius: 10px;
+}
+
+.clue-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #718096; /* slate-500 */
+}
