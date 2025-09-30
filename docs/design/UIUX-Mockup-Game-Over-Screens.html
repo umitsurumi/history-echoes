@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UX Mockup: Game Over Screens</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .font-serif-sc {
+            font-family: 'Noto Serif SC', serif;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        /* Custom scrollbar for clue list */
+        .clue-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .clue-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .clue-scrollbar::-webkit-scrollbar-thumb {
+            background: #4A5568; /* slate-600 */
+            border-radius: 10px;
+        }
+        .clue-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* slate-500 */
+        }
+    </style>
+</head>
+<body class="bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased" style="background-image: url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+
+    <div class="flex items-start justify-center min-h-screen w-full px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl">
+
+            <!-- Mockup 1: Success Screen -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">5. Result - Success</span>
+                </div>
+                <div class="flex-grow bg-transparent p-6 md:p-8 rounded-b-md flex flex-col justify-between" style="min-height: 700px;">
+                    <header class="text-center fade-in">
+                        <img src="https://unpkg.com/lucide-static@latest/icons/award.svg" alt="Success Icon" class="h-12 w-12 mx-auto text-amber-300 mb-2">
+                        <h1 class="font-serif-sc text-3xl font-bold text-amber-300">恭喜你，答对了！</h1>
+                        <p class="text-slate-300 mt-1">你在第 <span class="font-bold text-white">3</span> 条线索时揭晓了谜底</p>
+                    </header>
+                    
+                    <main class="my-6 flex-grow grid md:grid-cols-2 gap-6 items-start">
+                        <div class="space-y-4 fade-in" style="animation-delay: 200ms;">
+                            <img src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Portrait" class="rounded-lg object-cover w-full h-48 shadow-lg">
+                            <h2 class="font-serif-sc text-4xl text-slate-100">艾萨克·牛顿</h2>
+                            <p class="text-slate-400 text-sm leading-relaxed">一位英国物理学家、数学家、天文学家、自然哲学家和炼金术士，被誉为人类历史上最伟大、最有影响力的科学家之一。他提出了万有引力定律和三大运动定律，为经典物理学奠定了基础。</p>
+                        </div>
+                        <div class="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col fade-in" style="animation-delay: 400ms;">
+                            <h3 class="font-serif-sc text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 clue-scrollbar flex-grow">
+                                <li>关于我早年对炼金术的痴迷鲜为人知。</li>
+                                <li>我曾用自制的仪器进行了大量光学实验。</li>
+                                <li class="text-amber-300 font-bold">我曾长期掌管一个国家的铸币工作...</li>
+                                <li>我的主要著作之一是用拉丁文写成的。</li>
+                                <li>我的三大定律是经典力学的基础。</li>
+                                <li>我与一位德国博学家在微积分发明权上存在争议。</li>
+                                <li>我的研究奠定了现代光谱学的基础。</li>
+                                <li>我在光学领域的著作同样影响深远。</li>
+                                <li>我的姓氏被用作一个力的单位。</li>
+                                <li>据说，一颗苹果的坠落给了我最伟大的灵感。</li>
+                            </ol>
+                        </div>
+                    </main>
+
+                    <footer class="fade-in" style="animation-delay: 600ms;">
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <button class="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/home.svg" alt="Icon" class="h-5 w-5">
+                                <span>返回主页</span>
+                            </button>
+                            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105 shadow-lg">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/rotate-cw.svg" alt="Icon" class="h-5 w-5">
+                                <span>再玩一局</span>
+                            </button>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
+            <!-- Mockup 2: Failure/Give Up Screen -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">6. Result - Failure</span>
+                </div>
+                <div class="flex-grow bg-transparent p-6 md:p-8 rounded-b-md flex flex-col justify-between" style="min-height: 700px;">
+                    <header class="text-center fade-in">
+                        <img src="https://unpkg.com/lucide-static@latest/icons/scroll-text.svg" alt="Failure Icon" class="h-12 w-12 mx-auto text-indigo-300 mb-2">
+                        <h1 class="font-serif-sc text-3xl font-bold text-indigo-300">真相揭晓</h1>
+                        <p class="text-slate-300 mt-1">历史的画卷已然展开</p>
+                    </header>
+
+                    <main class="my-6 flex-grow grid md:grid-cols-2 gap-6 items-start">
+                        <div class="space-y-4 fade-in" style="animation-delay: 200ms;">
+                             <img src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib-rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Portrait" class="rounded-lg object-cover w-full h-48 shadow-lg">
+                            <h2 class="font-serif-sc text-4xl text-slate-100">艾萨克·牛顿</h2>
+                            <p class="text-slate-400 text-sm leading-relaxed">一位英国物理学家、数学家、天文学家、自然哲学家和炼金术士，被誉为人类历史上最伟大、最有影响力的科学家之一。他提出了万有引力定律和三大运动定律，为经典物理学奠定了基础。</p>
+                        </div>
+                        <div class="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col fade-in" style="animation-delay: 400ms;">
+                            <h3 class="font-serif-sc text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 clue-scrollbar flex-grow">
+                                <li>关于我早年对炼金术的痴迷鲜为人知。</li>
+                                <li>我曾用自制的仪器进行了大量光学实验。</li>
+                                <li>我曾长期掌管一个国家的铸币工作...</li>
+                                <li>我的主要著作之一是用拉丁文写成的。</li>
+                                <li>我的三大定律是经典力学的基础。</li>
+                                <li>我与一位德国博学家在微积分发明权上存在争议。</li>
+                                <li>我的研究奠定了现代光谱学的基础。</li>
+                                <li>我的光学领域的著作同样影响深远。</li>
+                                <li>我的姓氏被用作一个力的单位。</li>
+                                <li class="text-slate-200 font-bold">据说，一颗苹果的坠落给了我最伟大的灵感。</li>
+                            </ol>
+                        </div>
+                    </main>
+
+                     <footer class="fade-in" style="animation-delay: 600ms;">
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <button class="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/home.svg" alt="Icon" class="h-5 w-5">
+                                <span>返回主页</span>
+                            </button>
+                            <button class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105 shadow-lg">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/rotate-cw.svg" alt="Icon" class="h-5 w-5">
+                                <span>再玩一局</span>
+                            </button>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

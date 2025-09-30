@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UX Mockup: Homepage & Game Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-serif-sc {
+            font-family: 'Noto Serif SC', serif;
+        }
+        /* A subtle animation for elements fading in */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        .anim-delay-200 { animation-delay: 200ms; }
+        .anim-delay-400 { animation-delay: 400ms; }
+        .anim-delay-600 { animation-delay: 600ms; }
+        .anim-delay-800 { animation-delay: 800ms; }
+    </style>
+</head>
+<body class="bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased" style="background-image: url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+
+    <div class="flex items-center justify-center min-h-screen w-full px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl">
+
+            <!-- Mockup 1: Welcome Page -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">1. Welcome</span>
+                </div>
+                <div class="flex-grow bg-slate-900/70 p-8 rounded-b-md flex items-center justify-center">
+                    <div class="text-center w-full max-w-sm">
+                        <div class="fade-in">
+                            <img src="https://unpkg.com/lucide-static@latest/icons/brain-circuit.svg" alt="Icon" class="h-16 w-16 mx-auto text-amber-300 mb-6">
+                        </div>
+                        <h1 class="font-serif-sc text-4xl md:text-5xl font-bold text-slate-100 fade-in anim-delay-200">历史回响</h1>
+                        <p class="mt-4 text-slate-300 leading-relaxed fade-in anim-delay-400">十条线索，一位伟人。穿越时空迷雾，你能否揭晓谜底？</p>
+                        <a href="#" class="mt-10 inline-block bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-lg px-12 py-3 rounded-lg shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 focus:ring-offset-slate-900 fade-in anim-delay-600">
+                            开启探索之旅
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mockup 2: Game Setup Page -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">2. Game Setup</span>
+                </div>
+                <div class="flex-grow bg-transparent p-6 md:p-8 rounded-b-md flex flex-col justify-between">
+                    <div class="space-y-6">
+                        <h2 class="font-serif-sc text-3xl text-slate-100 text-center mb-6">设定时空坐标</h2>
+                        
+                        <!-- Time Period -->
+                        <div>
+                            <label class="block text-sm font-medium text-amber-300 mb-2">时间范围</label>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">古典时代</button>
+                                <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">后古典时代</button>
+                                <button class="bg-amber-500/20 text-amber-200 py-3 px-2 rounded-md transition duration-200 border border-amber-400/50 ring-2 ring-amber-400">近代早期</button>
+                                <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">近现代</button>
+                            </div>
+                        </div>
+
+                        <!-- Region -->
+                        <div>
+                            <label class="block text-sm font-medium text-amber-300 mb-2">地域范围</label>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                               <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">东亚</button>
+                               <button class="bg-amber-500/20 text-amber-200 py-3 px-2 rounded-md transition duration-200 border border-amber-400/50 ring-2 ring-amber-400">欧洲</button>
+                               <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">美洲</button>
+                               <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700">其他</button>
+                            </div>
+                        </div>
+
+                        <!-- Difficulty -->
+                        <div>
+                            <label class="block text-sm font-medium text-amber-300 mb-2">难度等级</label>
+                            <div class="grid grid-cols-3 gap-2 text-sm">
+                                <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700 flex items-center justify-center gap-1">简单</button>
+                                <button class="bg-amber-500/20 text-amber-200 py-3 px-2 rounded-md transition duration-200 border border-amber-400/50 ring-2 ring-amber-400 flex items-center justify-center gap-1">普通</button>
+                                <button class="bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 py-3 px-2 rounded-md transition duration-200 border border-slate-700 flex items-center justify-center gap-1">困难</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <button class="w-full mt-8 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105">
+                        <img src="https://unpkg.com/lucide-static@latest/icons/swords.svg" alt="Icon" class="h-5 w-5">
+                        <span>生成谜题</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
