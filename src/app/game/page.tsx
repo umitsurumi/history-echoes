@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // 模拟数据 - 实际开发中这些数据应该从后端API获取
 const mockGameData = {
@@ -28,6 +29,8 @@ const mockGameData = {
 type GameState = 'playing' | 'success' | 'failed' | 'gaveUp';
 
 export default function Game() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [gameState, setGameState] = useState<GameState>('playing');
     const [currentClueIndex, setCurrentClueIndex] = useState(0);
     const [userAnswer, setUserAnswer] = useState('');
@@ -36,7 +39,50 @@ export default function Game() {
     const [errorMessage, setErrorMessage] = useState('');
     const [gameData, setGameData] = useState(mockGameData);
     const [clueAnimation, setClueAnimation] = useState('animate-fade-in-down');
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
     const clueRef = useRef<HTMLDivElement>(null);
+
+    // 初始化游戏数据
+    useEffect(() => {
+        const initializeGame = async () => {
+            try {
+                setIsLoading(true);
+
+                // 从URL参数获取游戏设置
+                const timePeriod = searchParams.get('timePeriod') || '近代早期';
+                const region = searchParams.get('region') || '欧洲';
+                const difficulty = searchParams.get('difficulty') || '普通';
+
+                // 模拟API调用获取游戏数据
+                // 在实际应用中，这里应该调用后端API
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 模拟随机错误（10%的概率）
+                if (Math.random() < 0.1) {
+                    throw new Error('AI服务暂时不可用，请稍后重试');
+                }
+
+                // 根据设置更新游戏数据
+                setGameData(prevData => ({
+                    ...prevData,
+                    timePeriod,
+                    region,
+                    difficulty
+                }));
+
+                setIsLoading(false);
+            } catch (error) {
+                console.error('游戏初始化失败:', error);
+                setHasError(true);
+                // 跳转到错误页面
+                const errorMessage = error instanceof Error ? error.message : '未知错误';
+                router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+            }
+        };
+
+        initializeGame();
+    }, [router, searchParams]);
 
     // 处理线索切换动画
     useEffect(() => {

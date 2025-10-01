@@ -63,8 +63,8 @@ export default function GameSetup() {
                                             key={period.value}
                                             onClick={() => setSelectedTimePeriod(period.value)}
                                             className={`py-3 px-2 rounded-md transition-all duration-200 border ${selectedTimePeriod === period.value
-                                                    ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
-                                                    : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
+                                                ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
+                                                : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
                                                 }`}
                                         >
                                             <div className="font-medium">{period.label}</div>
@@ -85,8 +85,8 @@ export default function GameSetup() {
                                             key={region.value}
                                             onClick={() => setSelectedRegion(region.value)}
                                             className={`py-3 px-2 rounded-md transition-all duration-200 border ${selectedRegion === region.value
-                                                    ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
-                                                    : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
+                                                ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
+                                                : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
                                                 }`}
                                         >
                                             {region.label}
@@ -106,8 +106,8 @@ export default function GameSetup() {
                                             key={difficulty.value}
                                             onClick={() => setSelectedDifficulty(difficulty.value)}
                                             className={`py-3 px-2 rounded-md transition-all duration-200 border flex items-center justify-center ${selectedDifficulty === difficulty.value
-                                                    ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
-                                                    : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
+                                                ? 'bg-amber-500/20 text-amber-200 border-amber-400/50 ring-2 ring-amber-400'
+                                                : 'bg-slate-800/70 hover:bg-amber-500/20 text-slate-200 border-slate-700 hover:border-amber-400/30'
                                                 }`}
                                         >
                                             {difficulty.label}
@@ -124,8 +124,12 @@ export default function GameSetup() {
                             </div>
 
                             {/* 生成谜题按钮 */}
-                            <Link
-                                href="/game"
+                            <button
+                                onClick={() => {
+                                    // 构建loading页面的URL，包含所有设置参数
+                                    const loadingUrl = `/loading?timePeriod=${encodeURIComponent(selectedTimePeriod)}&region=${encodeURIComponent(selectedRegion)}&difficulty=${encodeURIComponent(selectedDifficulty)}`;
+                                    window.location.href = loadingUrl;
+                                }}
                                 className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -136,7 +140,7 @@ export default function GameSetup() {
                                     <path d="M8 21h8" />
                                 </svg>
                                 <span>生成谜题</span>
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>
