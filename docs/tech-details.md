@@ -234,7 +234,7 @@
   CREATE TABLE game_sessions (
     id UUID PRIMARY KEY, -- 由后端应用生成的UUID
     figure_id INTEGER NOT NULL REFERENCES figures(id), -- 本局游戏的目标人物
-    -- 记录本局游戏中，按顺序揭示给玩家的具体线索ID列表
+    -- 记录本局游戏中，应该按顺序揭示给玩家的具体线索ID列表
     revealed_clue_ids INTEGER[] NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'CORRECT', 'GAME_OVER', 'ABANDONED')), -- 游戏状态
     revealed_clue_count SMALLINT NOT NULL DEFAULT 1, -- 已揭示的线索数量
@@ -254,3 +254,27 @@
   FOR EACH ROW
   EXECUTE PROCEDURE trigger_set_timestamp();
   ```
+
+## 后端流程
+
+### 创建新游戏
+
+1. 用户选择游戏设置后，前端发起请求到后端。
+2. 后端从人物表中随机选择一个人物。
+3. 查询线索表中是否存在满足条件的线索（人物ID，难度ID，并要求该难度下1-10序号的线索均存在）
+   1. 如果不满足条件，与LLM交互，生成符合需要的线索并存入数据库。
+   2. 进一步优化项目，可以考虑即使当前难度下已经存在符合的线索，仍然可以随机生成部分以增加趣味性。例如从数据库中抽取序号1，4，6，7，9的线索，其余线索通过LLM补充。# TODO 暂时不需要实现
+4. 初始化本局信息并记入game_session表
+5. 返回响应
+
+### 判断结果
+
+1. 用户提交答案后，根据game_session信息，查询对应人物信息。
+2. 判断人物名是否一致，如果不一致，再判断与别名是否一致。
+   1. 如果判断成功，返回成功响应。
+   2. 如果不一致，且游戏次数未用完，顺序揭露下一条提示。
+   3. 如果不一致，且游戏次数用完，游戏结束。
+
+### 结束游戏
+
+1. 用户点击结束游戏， 直接返回结束的响应。

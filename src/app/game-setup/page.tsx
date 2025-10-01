@@ -16,7 +16,7 @@ export default function GameSetup() {
     ];
 
     const regions = [
-        { value: '东亚', label: '东亚' },
+        { value: '亚洲', label: '亚洲' },
         { value: '欧洲', label: '欧洲' },
         { value: '美洲', label: '美洲' },
         { value: '其他', label: '其他' },
@@ -135,7 +135,7 @@ export default function GameSetup() {
                                             '近现代': 'MODERN'
                                         };
                                         const regionMap: Record<string, string> = {
-                                            '东亚': 'ASIA',
+                                            '亚洲': 'ASIA',
                                             '欧洲': 'EUROPE',
                                             '美洲': 'AMERICAS',
                                             '其他': 'OTHER'
