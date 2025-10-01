@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI/UX Mockup: Loading & Error States</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-serif-sc {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
+    style="background-image: url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');">
+
+    <div class="flex items-center justify-center min-h-screen w-full px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-6xl">
+
+            <!-- Mockup 1: Loading State -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">7. Status - Loading</span>
+                </div>
+                <div class="flex-grow bg-transparent p-6 md:p-8 rounded-b-md flex items-center justify-center"
+                    style="min-height: 500px;">
+                    <div class="text-center w-full max-w-sm fade-in">
+                        <img src="https://unpkg.com/lucide-static@latest/icons/loader-circle.svg" alt="Loading Icon"
+                            class="h-16 w-16 mx-auto text-amber-300 mb-8 animate-spin">
+                        <h2 class="font-serif-sc text-3xl text-slate-100">正在生成谜题...</h2>
+                        <p class="mt-3 text-slate-400 leading-relaxed">正在跨越时空寻找历史人物，请稍候。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mockup 2: Error State -->
+            <div class="flex flex-col border border-slate-600 rounded-lg p-2 bg-slate-800/50 shadow-lg">
+                <div class="flex items-center gap-2 p-2 border-b border-slate-600">
+                    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                    <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    <span class="ml-auto text-sm text-slate-400">8. Status - Error</span>
+                </div>
+                <div class="flex-grow bg-transparent p-6 md:p-8 rounded-b-md flex items-center justify-center"
+                    style="min-height: 500px;">
+                    <div class="text-center w-full max-w-sm fade-in">
+                        <img src="https://unpkg.com/lucide-static@latest/icons/server-off.svg" alt="Error Icon"
+                            class="h-16 w-16 mx-auto text-indigo-300 mb-8">
+                        <h2 class="font-serif-sc text-3xl text-slate-100">谜题生成失败</h2>
+                        <p class="mt-3 text-slate-400 leading-relaxed">抱歉，似乎时空通讯暂时中断，我们未能获取到历史人物的信息。</p>
+
+                        <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                            <button
+                                class="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/home.svg" alt="Icon"
+                                    class="h-5 w-5">
+                                <span>返回主页</span>
+                            </button>
+                            <button
+                                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-transform transform hover:scale-105 shadow-lg">
+                                <img src="https://unpkg.com/lucide-static@latest/icons/rotate-cw.svg" alt="Icon"
+                                    class="h-5 w-5">
+                                <span>重试</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>
