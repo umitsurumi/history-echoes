@@ -125,10 +125,56 @@ export default function GameSetup() {
 
                             {/* 生成谜题按钮 */}
                             <button
-                                onClick={() => {
-                                    // 构建loading页面的URL，包含所有设置参数
-                                    const loadingUrl = `/loading?timePeriod=${encodeURIComponent(selectedTimePeriod)}&region=${encodeURIComponent(selectedRegion)}&difficulty=${encodeURIComponent(selectedDifficulty)}`;
-                                    window.location.href = loadingUrl;
+                                onClick={async () => {
+                                    try {
+                                        // 将中文参数转换为API枚举值
+                                        const timePeriodMap: Record<string, string> = {
+                                            '古典时代': 'CLASSICAL',
+                                            '后古典时代': 'POST_CLASSICAL',
+                                            '近代早期': 'EARLY_MODERN',
+                                            '近现代': 'MODERN'
+                                        };
+                                        const regionMap: Record<string, string> = {
+                                            '东亚': 'ASIA',
+                                            '欧洲': 'EUROPE',
+                                            '美洲': 'AMERICAS',
+                                            '其他': 'OTHER'
+                                        };
+                                        const difficultyMap: Record<string, string> = {
+                                            '简单': 'EASY',
+                                            '普通': 'NORMAL',
+                                            '困难': 'HARD'
+                                        };
+
+                                        const requestBody = {
+                                            timePeriod: timePeriodMap[selectedTimePeriod],
+                                            region: regionMap[selectedRegion],
+                                            difficulty: difficultyMap[selectedDifficulty]
+                                        };
+
+                                        const response = await fetch('/api/games', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify(requestBody),
+                                        });
+
+                                        if (!response.ok) {
+                                            const errorData = await response.json();
+                                            throw new Error(errorData.error || '生成谜题失败');
+                                        }
+
+                                        const gameData = await response.json();
+
+                                        // 跳转到游戏页面，传递gameId
+                                        window.location.href = `/game?gameId=${gameData.gameId}`;
+
+                                    } catch (error) {
+                                        console.error('生成谜题失败:', error);
+                                        const errorMessage = error instanceof Error ? error.message : '未知错误';
+                                        window.location.href = `/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`;
+                                    }
                                 }}
                                 className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105"
                             >

@@ -4,43 +4,47 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// 模拟数据 - 实际开发中这些数据应该从后端API获取
-const mockGameData = {
-    figureName: "艾萨克·牛顿",
-    aliases: ["牛顿", "Isaac Newton", "newton"],
-    clues: [
-        "关于我早年对炼金术的痴迷鲜为人知。",
-        "我曾用自制的仪器进行了大量光学实验。",
-        "我曾长期掌管一个国家的铸币工作，并严厉打击伪币制造者。",
-        "我与一位德国数学家就微积分的发明权发生过激烈争论。",
-        "我提出了三大运动定律，改变了人类对物理世界的理解。",
-        "我担任过皇家学会的主席长达二十四年之久。",
-        "我的代表作《自然哲学的数学原理》被誉为科学史上最重要的著作之一。",
-        "我在剑桥大学三一学院学习并后来成为教授。",
-        "我出生于一个农民家庭，但最终成为英国科学界的泰斗。",
-        "据说，一颗苹果的坠落给了我最伟大的灵感。"
-    ],
-    timePeriod: "近代早期",
-    region: "欧洲",
-    difficulty: "简单",
-    sourceURL: "https://en.wikipedia.org/wiki/Isaac_Newton"
-};
-
 type GameState = 'playing' | 'success' | 'failed' | 'gaveUp';
+
+interface GameData {
+    gameId: string;
+    revealedClues: string[];
+    currentClueIndex: number;
+    totalClues: number;
+}
+
+interface FigureInfo {
+    name: string;
+    summary: string;
+    imageUrl: string;
+    sourceURL: string;
+}
+
+interface GameResponse {
+    status: 'CORRECT' | 'INCORRECT' | 'GAME_OVER' | 'ABANDONED';
+    figure?: FigureInfo;
+    allClues?: string[];
+    revealedClues?: string[];
+    currentClueIndex: number;
+}
 
 export default function Game() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [gameState, setGameState] = useState<GameState>('playing');
     const [currentClueIndex, setCurrentClueIndex] = useState(0);
+    const [revealedClues, setRevealedClues] = useState<string[]>([]);
+    const [totalClues, setTotalClues] = useState(10);
     const [userAnswer, setUserAnswer] = useState('');
     const [showHistory, setShowHistory] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const [gameData, setGameData] = useState(mockGameData);
     const [clueAnimation, setClueAnimation] = useState('animate-fade-in-down');
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
+    const [gameId, setGameId] = useState<string>('');
+    const [figureInfo, setFigureInfo] = useState<FigureInfo | null>(null);
+    const [allClues, setAllClues] = useState<string[]>([]);
     const clueRef = useRef<HTMLDivElement>(null);
 
     // 初始化游戏数据
@@ -49,33 +53,34 @@ export default function Game() {
             try {
                 setIsLoading(true);
 
-                // 从URL参数获取游戏设置
-                const timePeriod = searchParams.get('timePeriod') || '近代早期';
-                const region = searchParams.get('region') || '欧洲';
-                const difficulty = searchParams.get('difficulty') || '普通';
+                // 从URL参数获取gameId
+                const gameIdParam = searchParams.get('gameId');
 
-                // 模拟API调用获取游戏数据
-                // 在实际应用中，这里应该调用后端API
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                // 模拟随机错误（10%的概率）
-                if (Math.random() < 0.1) {
-                    throw new Error('AI服务暂时不可用，请稍后重试');
+                if (!gameIdParam) {
+                    throw new Error('游戏ID无效，请重新开始游戏');
                 }
 
-                // 根据设置更新游戏数据
-                setGameData(prevData => ({
-                    ...prevData,
-                    timePeriod,
-                    region,
-                    difficulty
-                }));
+                setGameId(gameIdParam);
+
+                // 调用API获取游戏状态
+                const response = await fetch(`/api/games/${gameIdParam}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '获取游戏状态失败');
+                }
+
+                const gameData = await response.json();
+
+                setRevealedClues(gameData.revealedClues);
+                setCurrentClueIndex(gameData.currentClueIndex);
+                setTotalClues(gameData.totalClues);
 
                 setIsLoading(false);
+
             } catch (error) {
                 console.error('游戏初始化失败:', error);
                 setHasError(true);
-                // 跳转到错误页面
                 const errorMessage = error instanceof Error ? error.message : '未知错误';
                 router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
             }
@@ -97,56 +102,86 @@ export default function Game() {
 
     // 处理答案提交
     const handleSubmit = async () => {
-        if (!userAnswer.trim() || isSubmitting) return;
+        if (!userAnswer.trim() || isSubmitting || !gameId) return;
 
         setIsSubmitting(true);
         setErrorMessage('');
 
-        // 模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            const response = await fetch(`/api/games/${gameId}/guess`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ guess: userAnswer }),
+            });
 
-        // 答案校验逻辑
-        const normalizedAnswer = userAnswer.trim().toLowerCase();
-        const isCorrect = gameData.aliases.some(alias =>
-            alias.toLowerCase() === normalizedAnswer
-        );
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '提交答案失败');
+            }
 
-        if (isCorrect) {
-            // 正确答案动画
-            setGameState('success');
-        } else {
-            // 错误答案动画
-            setErrorMessage('不对哦，再想想...');
+            const result: GameResponse = await response.json();
 
-            // 如果还有更多线索，显示下一条
-            if (currentClueIndex < gameData.clues.length - 1) {
+            if (result.status === 'CORRECT') {
+                // 答案正确
+                setFigureInfo(result.figure!);
+                setAllClues(result.allClues!);
+                setGameState('success');
+            } else if (result.status === 'INCORRECT') {
+                // 答案错误，还有更多线索
+                setErrorMessage('不对哦，再想想...');
+                setRevealedClues(result.revealedClues!);
+                setCurrentClueIndex(result.currentClueIndex);
+
                 setTimeout(() => {
-                    setCurrentClueIndex(prev => prev + 1);
                     setUserAnswer('');
                 }, 300);
-            } else {
+            } else if (result.status === 'GAME_OVER') {
                 // 所有线索都用完了
-                setTimeout(() => {
-                    setGameState('failed');
-                }, 300);
+                setFigureInfo(result.figure!);
+                setAllClues(result.allClues!);
+                setGameState('failed');
             }
-        }
 
-        setIsSubmitting(false);
+        } catch (error) {
+            console.error('提交答案失败:', error);
+            const errorMsg = error instanceof Error ? error.message : '未知错误';
+            setErrorMessage(errorMsg);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // 处理放弃游戏
-    const handleGiveUp = () => {
-        setGameState('gaveUp');
+    const handleGiveUp = async () => {
+        if (!gameId) return;
+
+        try {
+            const response = await fetch(`/api/games/${gameId}/abandon`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || '放弃游戏失败');
+            }
+
+            const result: GameResponse = await response.json();
+            setFigureInfo(result.figure!);
+            setAllClues(result.allClues!);
+            setGameState('gaveUp');
+
+        } catch (error) {
+            console.error('放弃游戏失败:', error);
+            const errorMsg = error instanceof Error ? error.message : '未知错误';
+            setErrorMessage(errorMsg);
+        }
     };
 
     // 处理重新开始游戏
     const handleRestart = () => {
-        setGameState('playing');
-        setCurrentClueIndex(0);
-        setUserAnswer('');
-        setErrorMessage('');
-        setShowHistory(false);
+        router.push('/game-setup');
     };
 
     // 处理键盘事件
@@ -157,7 +192,7 @@ export default function Game() {
     };
 
     // 游戏成功界面
-    if (gameState === 'success') {
+    if (gameState === 'success' && figureInfo) {
         return (
             <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
@@ -179,15 +214,13 @@ export default function Game() {
                                 {/* 人物信息区域 */}
                                 <div className="space-y-4 animate-fade-in animation-delay-200">
                                     <img
-                                        src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                        src={figureInfo.imageUrl}
                                         alt="人物肖像"
                                         className="rounded-lg object-cover w-full h-48 shadow-lg"
                                     />
-                                    <h2 className="font-serif text-4xl text-slate-100">{gameData.figureName}</h2>
+                                    <h2 className="font-serif text-4xl text-slate-100">{figureInfo.name}</h2>
                                     <p className="text-slate-400 text-sm leading-relaxed">
-                                        艾萨克·牛顿（1643-1727）是英国物理学家、数学家、天文学家和自然哲学家。
-                                        他在《自然哲学的数学原理》中提出了万有引力定律和三大运动定律，奠定了经典力学的基础，
-                                        被誉为科学史上最重要的人物之一。
+                                        {figureInfo.summary}
                                     </p>
                                 </div>
 
@@ -195,7 +228,7 @@ export default function Game() {
                                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col animate-fade-in animation-delay-400">
                                     <h3 className="font-serif text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
                                     <ol className="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 flex-grow max-h-80 clue-scrollbar">
-                                        {gameData.clues.map((clue, index) => (
+                                        {allClues.map((clue, index) => (
                                             <li
                                                 key={index}
                                                 className={index === currentClueIndex ? "text-amber-300 font-bold" : ""}
@@ -239,7 +272,7 @@ export default function Game() {
     }
 
     // 游戏失败/放弃界面
-    if (gameState === 'failed' || gameState === 'gaveUp') {
+    if ((gameState === 'failed' || gameState === 'gaveUp') && figureInfo) {
         return (
             <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
@@ -259,15 +292,13 @@ export default function Game() {
                                 {/* 人物信息区域 */}
                                 <div className="space-y-4 animate-fade-in animation-delay-200">
                                     <img
-                                        src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                        src={figureInfo.imageUrl}
                                         alt="人物肖像"
                                         className="rounded-lg object-cover w-full h-48 shadow-lg"
                                     />
-                                    <h2 className="font-serif text-4xl text-slate-100">{gameData.figureName}</h2>
+                                    <h2 className="font-serif text-4xl text-slate-100">{figureInfo.name}</h2>
                                     <p className="text-slate-400 text-sm leading-relaxed">
-                                        艾萨克·牛顿（1643-1727）是英国物理学家、数学家、天文学家和自然哲学家。
-                                        他在《自然哲学的数学原理》中提出了万有引力定律和三大运动定律，奠定了经典力学的基础，
-                                        被誉为科学史上最重要的人物之一。
+                                        {figureInfo.summary}
                                     </p>
                                 </div>
 
@@ -275,10 +306,10 @@ export default function Game() {
                                 <div className="bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-4 h-full flex flex-col animate-fade-in animation-delay-400">
                                     <h3 className="font-serif text-lg mb-3 text-slate-200 border-b border-slate-700 pb-2">线索回顾</h3>
                                     <ol className="list-decimal list-inside space-y-2 text-slate-400 text-sm overflow-y-auto pr-2 flex-grow max-h-80 clue-scrollbar">
-                                        {gameData.clues.map((clue, index) => (
+                                        {allClues.map((clue, index) => (
                                             <li
                                                 key={index}
-                                                className={index === gameData.clues.length - 1 ? "text-slate-200 font-bold" : ""}
+                                                className={index === allClues.length - 1 ? "text-slate-200 font-bold" : ""}
                                             >
                                                 {clue}
                                             </li>
@@ -339,7 +370,7 @@ export default function Game() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-slate-400 font-mono text-sm">
-                                    线索 {currentClueIndex + 1} / {gameData.clues.length}
+                                    线索 {currentClueIndex + 1} / {totalClues}
                                 </span>
                                 <button
                                     onClick={() => setShowHistory(true)}
@@ -362,7 +393,7 @@ export default function Game() {
                                 className={`w-full bg-slate-900/50 backdrop-blur-sm border border-slate-700 rounded-lg p-6 text-center shadow-inner clue-transition ${clueAnimation}`}
                             >
                                 <p className="text-slate-200 text-lg md:text-xl leading-relaxed">
-                                    {gameData.clues[currentClueIndex]}
+                                    {revealedClues[currentClueIndex] || "正在加载线索..."}
                                 </p>
                             </div>
                         </main>
@@ -447,7 +478,7 @@ export default function Game() {
                         </div>
                         <div className="p-6 max-h-80 overflow-y-auto">
                             <ol className="list-decimal list-inside space-y-3 text-slate-300">
-                                {gameData.clues.slice(0, currentClueIndex + 1).map((clue, index) => (
+                                {revealedClues.slice(0, currentClueIndex + 1).map((clue, index) => (
                                     <li
                                         key={index}
                                         className={index === currentClueIndex ? "font-bold text-white" : ""}
