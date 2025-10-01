@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gameSessions, GameSession } from '../../game-sessions';
+import {
+    getGameSession,
+    getFigure,
+    getAllCluesForFigure,
+    updateGameSession
+} from '@/lib/game-sessions';
 
 export async function POST(
     request: NextRequest,
@@ -9,7 +14,7 @@ export async function POST(
         const { gameId } = await params;
 
         // 获取游戏会话
-        const gameSession = gameSessions.get(gameId) as GameSession | undefined;
+        const gameSession = await getGameSession(gameId);
 
         if (!gameSession) {
             return NextResponse.json(
@@ -18,25 +23,37 @@ export async function POST(
             );
         }
 
-        if (gameSession.isCompleted) {
+        if (gameSession.status !== 'ACTIVE') {
             return NextResponse.json(
                 { error: "Game session has already ended." },
                 { status: 404 }
             );
         }
 
-        // 标记游戏为已完成（放弃状态）
-        gameSession.isCompleted = true;
+        // 获取人物信息
+        const figure = await getFigure(gameSession.figure_id);
+        if (!figure) {
+            return NextResponse.json(
+                { error: "Figure not found." },
+                { status: 500 }
+            );
+        }
+
+        // 标记游戏为已放弃
+        await updateGameSession(gameId, gameSession.revealed_clue_ids, 'ABANDONED');
+
+        // 获取所有线索
+        const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度
 
         return NextResponse.json({
             status: "ABANDONED",
             figure: {
-                name: gameSession.figure.figureName,
-                summary: gameSession.figure.summary,
-                imageUrl: gameSession.figure.imageUrl,
-                sourceURL: gameSession.figure.sourceURL
+                name: figure.name,
+                summary: figure.summary || `人物简介待完善 - ${figure.name}`,
+                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                sourceURL: figure.wiki_url
             },
-            allClues: gameSession.figure.clues,
+            allClues: allClues.map(clue => clue.clue_text),
             currentClueIndex: -1
         });
 

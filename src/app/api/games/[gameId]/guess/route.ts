@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gameSessions, normalizeAnswer, GameSession } from '../../game-sessions';
+import {
+    getGameSession,
+    getFigure,
+    getClues,
+    getAllCluesForFigure,
+    updateGameSession,
+    isAnswerCorrect
+} from '@/lib/game-sessions';
 
 interface GuessRequest {
     guess: string;
@@ -13,7 +20,7 @@ export async function POST(
         const { gameId } = await params;
 
         // 获取游戏会话
-        const gameSession = gameSessions.get(gameId) as GameSession | undefined;
+        const gameSession = await getGameSession(gameId);
 
         if (!gameSession) {
             return NextResponse.json(
@@ -22,7 +29,7 @@ export async function POST(
             );
         }
 
-        if (gameSession.isCompleted) {
+        if (gameSession.status !== 'ACTIVE') {
             return NextResponse.json(
                 { error: "Game session has already ended." },
                 { status: 404 }
@@ -39,55 +46,69 @@ export async function POST(
             );
         }
 
-        // 标准化用户答案
-        const normalizedGuess = normalizeAnswer(body.guess);
+        // 获取人物信息
+        const figure = await getFigure(gameSession.figure_id);
+        if (!figure) {
+            return NextResponse.json(
+                { error: "Figure not found." },
+                { status: 500 }
+            );
+        }
 
         // 检查答案是否正确
-        const isCorrect = gameSession.figure.aliases.some(alias =>
-            normalizeAnswer(alias) === normalizedGuess
-        );
+        const isCorrect = isAnswerCorrect(figure, body.guess);
 
         if (isCorrect) {
             // 答案正确，游戏结束
-            gameSession.isCompleted = true;
+            await updateGameSession(gameId, gameSession.revealed_clue_ids, 'CORRECT');
+
+            // 获取所有线索
+            const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度，后续可以根据实际难度调整
 
             return NextResponse.json({
                 status: "CORRECT",
                 figure: {
-                    name: gameSession.figure.figureName,
-                    summary: gameSession.figure.summary,
-                    imageUrl: gameSession.figure.imageUrl,
-                    sourceURL: gameSession.figure.sourceURL
+                    name: figure.name,
+                    summary: figure.summary || `人物简介待完善 - ${figure.name}`,
+                    imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                    sourceURL: figure.wiki_url
                 },
-                allClues: gameSession.figure.clues,
-                currentClueIndex: gameSession.currentClueIndex
+                allClues: allClues.map(clue => clue.clue_text),
+                currentClueIndex: gameSession.revealed_clue_count - 1
             });
         } else {
             // 答案错误
-            const nextClueIndex = gameSession.currentClueIndex + 1;
+            const nextClueIndex = gameSession.revealed_clue_count;
+            const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度
 
-            if (nextClueIndex < gameSession.totalClues) {
+            if (nextClueIndex < allClues.length) {
                 // 还有更多线索，显示下一条
-                gameSession.currentClueIndex = nextClueIndex;
+                const nextClue = allClues[nextClueIndex];
+                const newRevealedClueIds = [...gameSession.revealed_clue_ids, nextClue.id];
+
+                await updateGameSession(gameId, newRevealedClueIds, 'ACTIVE');
+
+                // 获取已揭示的线索文本
+                const revealedClues = await getClues(newRevealedClueIds);
 
                 return NextResponse.json({
                     status: "INCORRECT",
-                    revealedClues: gameSession.figure.clues.slice(0, nextClueIndex + 1),
+                    revealedClues: revealedClues.map(clue => clue.clue_text),
                     currentClueIndex: nextClueIndex
                 });
             } else {
                 // 所有线索都用完了，游戏结束
-                gameSession.isCompleted = true;
+                await updateGameSession(gameId, gameSession.revealed_clue_ids, 'GAME_OVER');
 
                 return NextResponse.json({
                     status: "GAME_OVER",
                     figure: {
-                        name: gameSession.figure.figureName,
-                        summary: gameSession.figure.summary,
-                        imageUrl: gameSession.figure.imageUrl,
-                        sourceURL: gameSession.figure.sourceURL
+                        name: figure.name,
+                        summary: figure.summary || `人物简介待完善 - ${figure.name}`,
+                        imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        sourceURL: figure.wiki_url
                     },
-                    allClues: gameSession.figure.clues,
+                    allClues: allClues.map(clue => clue.clue_text),
                     currentClueIndex: -1
                 });
             }
