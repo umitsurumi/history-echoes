@@ -30,7 +30,7 @@ export default function GameSetup() {
 
     return (
         <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
             <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
                 <div className="w-full max-w-md mx-auto">
@@ -125,56 +125,32 @@ export default function GameSetup() {
 
                             {/* 生成谜题按钮 */}
                             <button
-                                onClick={async () => {
-                                    try {
-                                        // 将中文参数转换为API枚举值
-                                        const timePeriodMap: Record<string, string> = {
-                                            '古典时代': 'CLASSICAL',
-                                            '后古典时代': 'POST_CLASSICAL',
-                                            '近代早期': 'EARLY_MODERN',
-                                            '近现代': 'MODERN'
-                                        };
-                                        const regionMap: Record<string, string> = {
-                                            '亚洲': 'ASIA',
-                                            '欧洲': 'EUROPE',
-                                            '美洲': 'AMERICAS',
-                                            '其他': 'OTHER'
-                                        };
-                                        const difficultyMap: Record<string, string> = {
-                                            '简单': 'EASY',
-                                            '普通': 'NORMAL',
-                                            '困难': 'HARD'
-                                        };
+                                onClick={() => {
+                                    // 将中文参数转换为API枚举值
+                                    const timePeriodMap: Record<string, string> = {
+                                        '古典时代': 'CLASSICAL',
+                                        '后古典时代': 'POST_CLASSICAL',
+                                        '近代早期': 'EARLY_MODERN',
+                                        '近现代': 'MODERN'
+                                    };
+                                    const regionMap: Record<string, string> = {
+                                        '亚洲': 'ASIA',
+                                        '欧洲': 'EUROPE',
+                                        '美洲': 'AMERICAS',
+                                        '其他': 'OTHER'
+                                    };
+                                    const difficultyMap: Record<string, string> = {
+                                        '简单': 'EASY',
+                                        '普通': 'NORMAL',
+                                        '困难': 'HARD'
+                                    };
 
-                                        const requestBody = {
-                                            timePeriod: timePeriodMap[selectedTimePeriod],
-                                            region: regionMap[selectedRegion],
-                                            difficulty: difficultyMap[selectedDifficulty]
-                                        };
+                                    // 先跳转到加载页面，传递设置参数
+                                    const timePeriod = timePeriodMap[selectedTimePeriod];
+                                    const region = regionMap[selectedRegion];
+                                    const difficulty = difficultyMap[selectedDifficulty];
 
-                                        const response = await fetch('/api/games', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                            },
-                                            body: JSON.stringify(requestBody),
-                                        });
-
-                                        if (!response.ok) {
-                                            const errorData = await response.json();
-                                            throw new Error(errorData.error || '生成谜题失败');
-                                        }
-
-                                        const gameData = await response.json();
-
-                                        // 跳转到游戏页面，传递gameId
-                                        window.location.href = `/game?gameId=${gameData.gameId}`;
-
-                                    } catch (error) {
-                                        console.error('生成谜题失败:', error);
-                                        const errorMessage = error instanceof Error ? error.message : '未知错误';
-                                        window.location.href = `/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`;
-                                    }
+                                    window.location.href = `/loading?timePeriod=${encodeURIComponent(timePeriod)}&region=${encodeURIComponent(region)}&difficulty=${encodeURIComponent(difficulty)}`;
                                 }}
                                 className="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300 transform hover:scale-105"
                             >

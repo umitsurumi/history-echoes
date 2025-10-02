@@ -195,7 +195,7 @@ export default function Game() {
     if (gameState === 'success' && figureInfo) {
         return (
             <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
                 <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
                     <div className="w-full max-w-6xl mx-auto">
@@ -271,11 +271,11 @@ export default function Game() {
         );
     }
 
-    // 游戏失败/放弃界面
+    // 游戏失败/放弃界
     if ((gameState === 'failed' || gameState === 'gaveUp') && figureInfo) {
         return (
             <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
-                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
                 <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
                     <div className="w-full max-w-6xl mx-auto">
@@ -352,7 +352,7 @@ export default function Game() {
     // 主游戏界面
     return (
         <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
             <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
                 <div className="w-full max-w-md mx-auto">

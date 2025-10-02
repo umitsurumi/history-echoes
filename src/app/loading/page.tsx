@@ -8,26 +8,52 @@ export default function Loading() {
     const searchParams = useSearchParams();
     const [progress, setProgress] = useState(0);
     const [statusText, setStatusText] = useState('正在初始化时空连接...');
+    const [hasError, setHasError] = useState(false);
 
     // 获取游戏设置参数
-    const timePeriod = searchParams.get('timePeriod') || '近代早期';
-    const region = searchParams.get('region') || '欧洲';
-    const difficulty = searchParams.get('difficulty') || '普通';
+    const timePeriod = searchParams.get('timePeriod');
+    const region = searchParams.get('region');
+    const difficulty = searchParams.get('difficulty');
+
+    // 将API枚举值转换为前端显示的中文值
+    const getDisplayTimePeriod = (period: string | null) => {
+        const timePeriodMap: Record<string, string> = {
+            'CLASSICAL': '古典时代',
+            'POST_CLASSICAL': '后古典时代',
+            'EARLY_MODERN': '近代早期',
+            'MODERN': '近现代'
+        };
+        return period ? timePeriodMap[period] || period : '未知';
+    };
+
+    const getDisplayRegion = (region: string | null) => {
+        const regionMap: Record<string, string> = {
+            'ASIA': '亚洲',
+            'EUROPE': '欧洲',
+            'AMERICAS': '美洲',
+            'OTHER': '其他'
+        };
+        return region ? regionMap[region] || region : '未知';
+    };
+
+    const getDisplayDifficulty = (difficulty: string | null) => {
+        const difficultyMap: Record<string, string> = {
+            'EASY': '简单',
+            'NORMAL': '普通',
+            'HARD': '困难'
+        };
+        return difficulty ? difficultyMap[difficulty] || difficulty : '未知';
+    };
 
     useEffect(() => {
-        // 模拟加载进度
-        const progressInterval = setInterval(() => {
-            setProgress(prev => {
-                const newProgress = prev + Math.random() * 10;
-                if (newProgress >= 100) {
-                    clearInterval(progressInterval);
-                    return 100;
-                }
-                return newProgress;
-            });
-        }, 300);
+        // 验证参数
+        if (!timePeriod || !region || !difficulty) {
+            const errorMessage = '缺少必要的游戏设置参数';
+            router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+            return;
+        }
 
-        // 模拟状态文本变化
+        // 状态文本变化
         const statusMessages = [
             '正在初始化时空连接...',
             '正在定位历史坐标...',
@@ -46,23 +72,76 @@ export default function Loading() {
             }
         }, 1500);
 
-        // 模拟API调用延迟，然后跳转到游戏页面
-        const timer = setTimeout(() => {
-            // 构建游戏页面的URL，包含所有设置参数
-            const gameUrl = `/game?timePeriod=${encodeURIComponent(timePeriod)}&region=${encodeURIComponent(region)}&difficulty=${encodeURIComponent(difficulty)}`;
-            router.push(gameUrl);
-        }, 8000); // 8秒后跳转
+        // 实际调用API创建游戏
+        const createGame = async () => {
+            try {
+                setStatusText('正在生成谜题...');
+
+                const requestBody = {
+                    timePeriod,
+                    region,
+                    difficulty
+                };
+
+                const response = await fetch('/api/games', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '生成谜题失败');
+                }
+
+                const gameData = await response.json();
+
+                // 跳转到游戏页面，传递gameId
+                router.push(`/game?gameId=${gameData.gameId}`);
+
+            } catch (error) {
+                console.error('生成谜题失败:', error);
+                const errorMessage = error instanceof Error ? error.message : '未知错误';
+                setHasError(true);
+                setStatusText('生成谜题失败');
+
+                // 延迟后跳转到错误页面
+                setTimeout(() => {
+                    router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+                }, 2000);
+            }
+        };
+
+        // 模拟进度条（与实际API调用并行）
+        const progressInterval = setInterval(() => {
+            setProgress(prev => {
+                const newProgress = prev + Math.random() * 10;
+                if (newProgress >= 90 && !hasError) { // 在90%处等待API响应
+                    clearInterval(progressInterval);
+                    return 90;
+                }
+                if (newProgress >= 100) {
+                    clearInterval(progressInterval);
+                    return 100;
+                }
+                return newProgress;
+            });
+        }, 300);
+
+        // 开始创建游戏
+        createGame();
 
         return () => {
             clearInterval(progressInterval);
             clearInterval(statusInterval);
-            clearTimeout(timer);
         };
-    }, [router, timePeriod, region, difficulty]);
+    }, [router, timePeriod, region, difficulty, hasError]);
 
     return (
         <div className="min-h-screen bg-slate-900 bg-cover bg-center bg-no-repeat text-white antialiased"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1554189097-96a99a18018f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
 
             <div className="flex items-center justify-center min-h-screen w-full px-4 py-8 bg-slate-900/70">
                 <div className="w-full max-w-md mx-auto">
@@ -112,15 +191,15 @@ export default function Loading() {
                                 <div className="grid grid-cols-3 gap-2 text-center">
                                     <div>
                                         <div className="text-amber-300 font-medium">时间</div>
-                                        <div>{timePeriod}</div>
+                                        <div>{getDisplayTimePeriod(timePeriod)}</div>
                                     </div>
                                     <div>
                                         <div className="text-amber-300 font-medium">地域</div>
-                                        <div>{region}</div>
+                                        <div>{getDisplayRegion(region)}</div>
                                     </div>
                                     <div>
                                         <div className="text-amber-300 font-medium">难度</div>
-                                        <div>{difficulty}</div>
+                                        <div>{getDisplayDifficulty(difficulty)}</div>
                                     </div>
                                 </div>
                             </div>
