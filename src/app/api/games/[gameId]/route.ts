@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gameSessions, GameSession } from '../game-sessions';
+import { getGameSession, getClues, getFigure } from '@/lib/game-sessions';
 
 export async function GET(
     request: NextRequest,
@@ -8,8 +8,8 @@ export async function GET(
     try {
         const { gameId } = await params;
 
-        // 获取游戏会话
-        const gameSession = gameSessions.get(gameId) as GameSession | undefined;
+        // 从数据库获取游戏会话
+        const gameSession = await getGameSession(gameId);
 
         if (!gameSession) {
             return NextResponse.json(
@@ -18,19 +18,23 @@ export async function GET(
             );
         }
 
-        if (gameSession.isCompleted) {
+        // 检查游戏状态是否为ACTIVE
+        if (gameSession.status !== 'ACTIVE') {
             return NextResponse.json(
-                { error: "Game session has already ended." },
+                { error: "Game session not found or has already ended." },
                 { status: 404 }
             );
         }
 
-        // 返回游戏状态
+        // 获取已揭示的线索
+        const revealedClues = await getClues(gameSession.revealed_clue_ids);
+        const clueTexts = revealedClues.map(clue => clue.clue_text);
+
+        // 返回游戏状态（按照技术文档要求的格式）
         return NextResponse.json({
-            gameId,
-            revealedClues: gameSession.figure.clues.slice(0, gameSession.currentClueIndex + 1),
-            currentClueIndex: gameSession.currentClueIndex,
-            totalClues: gameSession.totalClues
+            gameId: gameSession.id,
+            revealedClues: clueTexts,
+            currentClueIndex: gameSession.revealed_clue_count - 1
         });
 
     } catch (error) {
