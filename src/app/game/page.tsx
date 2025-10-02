@@ -27,7 +27,6 @@ export default function Game() {
     const [gameState, setGameState] = useState<GameState>('playing');
     const [currentClueIndex, setCurrentClueIndex] = useState(0);
     const [revealedClues, setRevealedClues] = useState<string[]>([]);
-    const [totalClues, setTotalClues] = useState(10);
     const [userAnswer, setUserAnswer] = useState('');
     const [showHistory, setShowHistory] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +66,6 @@ export default function Game() {
 
                 setRevealedClues(gameData.revealedClues);
                 setCurrentClueIndex(gameData.currentClueIndex);
-                setTotalClues(gameData.totalClues);
 
                 setIsLoading(false);
 
@@ -363,7 +361,7 @@ export default function Game() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <span className="text-slate-400 font-mono text-sm">
-                                    线索 {currentClueIndex + 1} / {totalClues}
+                                    线索 {currentClueIndex + 1} / 10
                                 </span>
                                 <button
                                     onClick={() => setShowHistory(true)}

@@ -7,7 +7,7 @@ export const AIConfig = {
         },
         gemini: {
             apiKey: process.env.GEMINI_API_KEY,
-            model: "gemini-pro",
+            model: "gemini-2.5-flash",
         },
     },
     prompts: {
@@ -44,7 +44,8 @@ export const AIConfig = {
                 "clues": [
                     "线索1 (最难)", "线索2", "线索3", "线索4", "线索5",
                     "线索6", "线索7", "线索8", "线索9", "线索10 (最简单)"
-                ]
+                ],
+                "summary: "{人物简介，基于维基百科内容的简短总结 200字以内}",
             }
 
 

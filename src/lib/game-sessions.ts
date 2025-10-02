@@ -1,11 +1,11 @@
-import { prisma } from './prisma';
-import { randomUUID } from 'crypto';
+import { prisma } from "./prisma";
+import { randomUUID } from "crypto";
 
 export interface GameSession {
     id: string;
     figure_id: number;
     revealed_clue_ids: number[];
-    status: 'ACTIVE' | 'CORRECT' | 'GAME_OVER' | 'ABANDONED';
+    status: "ACTIVE" | "CORRECT" | "GAME_OVER" | "ABANDONED";
     revealed_clue_count: number;
     created_at: Date;
     updated_at: Date;
@@ -18,8 +18,8 @@ export interface Figure {
     time_period: string;
     region: string;
     wiki_url: string;
-    summary?: string;
-    image_url?: string;
+    summary: string | null;
+    image_url: string | null;
 }
 
 export interface Clue {
@@ -30,20 +30,27 @@ export interface Clue {
     clue_text: string;
 }
 
-export type GameStatus = 'ACTIVE' | 'CORRECT' | 'GAME_OVER' | 'ABANDONED';
-export type TimePeriod = 'CLASSICAL' | 'POST_CLASSICAL' | 'EARLY_MODERN' | 'MODERN';
-export type Region = 'ASIA' | 'EUROPE' | 'AMERICAS' | 'OTHER';
-export type Difficulty = 'EASY' | 'NORMAL' | 'HARD';
+export type GameStatus = "ACTIVE" | "CORRECT" | "GAME_OVER" | "ABANDONED";
+export type TimePeriod =
+    | "CLASSICAL"
+    | "POST_CLASSICAL"
+    | "EARLY_MODERN"
+    | "MODERN";
+export type Region = "ASIA" | "EUROPE" | "AMERICAS" | "OTHER";
+export type Difficulty = "EASY" | "NORMAL" | "HARD";
 
 // 创建新游戏会话
-export async function createGameSession(figureId: number, allClueIds: number[]): Promise<string> {
+export async function createGameSession(
+    figureId: number,
+    allClueIds: number[]
+): Promise<string> {
     const gameId = randomUUID();
     await prisma.gameSession.create({
         data: {
             id: gameId,
             figure_id: figureId,
             revealed_clue_ids: allClueIds, // 存储全部线索ID
-            status: 'ACTIVE',
+            status: "ACTIVE",
             revealed_clue_count: 1, // 初始只揭示了一条线索
         },
     });
@@ -52,7 +59,9 @@ export async function createGameSession(figureId: number, allClueIds: number[]):
 }
 
 // 获取游戏会话
-export async function getGameSession(gameId: string): Promise<GameSession | null> {
+export async function getGameSession(
+    gameId: string
+): Promise<GameSession | null> {
     const gameSession = await prisma.gameSession.findUnique({
         where: { id: gameId },
     });
@@ -78,7 +87,7 @@ export async function getClues(clueIds: number[]): Promise<Clue[]> {
             id: { in: clueIds },
         },
         orderBy: {
-            sequence: 'desc',
+            sequence: "desc",
         },
     });
 
@@ -101,13 +110,15 @@ export async function updateGameSession(
 }
 
 // 增加已揭示线索数量
-export async function incrementRevealedClueCount(gameId: string): Promise<void> {
+export async function incrementRevealedClueCount(
+    gameId: string
+): Promise<void> {
     await prisma.gameSession.update({
         where: { id: gameId },
         data: {
             revealed_clue_count: {
-                increment: 1
-            }
+                increment: 1,
+            },
         },
     });
 }
@@ -117,10 +128,10 @@ export function normalizeAnswer(answer: string): string {
     return answer
         .trim()
         .toLowerCase()
-        .replace(/\s+/g, ' ') // 将多个空格替换为单个空格
-        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // 移除标点符号
-        .normalize('NFD') // 标准化Unicode字符
-        .replace(/[\u0300-\u036f]/g, ''); // 移除重音符号
+        .replace(/\s+/g, " ") // 将多个空格替换为单个空格
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // 移除标点符号
+        .normalize("NFD") // 标准化Unicode字符
+        .replace(/[\u0300-\u036f]/g, ""); // 移除重音符号
 }
 
 // 检查答案是否正确
@@ -133,5 +144,7 @@ export function isAnswerCorrect(figure: Figure, guess: string): boolean {
     }
 
     // 检查别名
-    return figure.aliases.some((alias: string) => normalizeAnswer(alias) === normalizedGuess);
+    return figure.aliases.some(
+        (alias: string) => normalizeAnswer(alias) === normalizedGuess
+    );
 }

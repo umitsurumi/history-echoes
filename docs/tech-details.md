@@ -38,7 +38,7 @@
         "关于我早年对炼金术的痴迷鲜为人知。"
     ],
     "currentClueIndex": 0, // number, 当前线索的索引 (0-based)
-    "totalClues": 10 // number, 总线索数
+    "totalClues": 10 // number, 总线索数，不再需要，固定为10条
     }
     ```
 

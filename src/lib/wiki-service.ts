@@ -1,7 +1,8 @@
 export interface WikipediaPage {
     title: string;
     extract: string;
-    imageUrl?: string;
+    imageUrl: string;
+    wikiUrl: string;
 }
 
 const WIKI_API_URL = "https://zh.wikipedia.org/w/api.php";
@@ -76,10 +77,16 @@ export async function getWikipediaPage(
             return null;
         }
 
+        // 构建完整的维基百科URL
+        const wikiUrl = `https://zh.wikipedia.org/zh-cn/${encodeURIComponent(
+            page.title
+        )}`;
+
         return {
             title: page.title,
             extract: page.extract,
             imageUrl: page.thumbnail?.source,
+            wikiUrl: wikiUrl,
         };
     } catch (error) {
         console.error(
