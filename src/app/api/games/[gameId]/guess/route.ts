@@ -3,7 +3,6 @@ import {
     getGameSession,
     getFigure,
     getClues,
-    getAllCluesForFigure,
     updateGameSession,
     incrementRevealedClueCount,
     isAnswerCorrect

@@ -6,13 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 type GameState = 'playing' | 'success' | 'failed' | 'gaveUp';
 
-interface GameData {
-    gameId: string;
-    revealedClues: string[];
-    currentClueIndex: number;
-    totalClues: number;
-}
-
 interface FigureInfo {
     name: string;
     summary: string;

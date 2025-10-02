@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { createGameSession, getAllCluesForFigure } from '@/lib/game-sessions';
+import { createGameSession } from '@/lib/game-sessions';
 
 // 时间范围、地域、难度枚举
 type TimePeriod = "CLASSICAL" | "POST_CLASSICAL" | "EARLY_MODERN" | "MODERN";

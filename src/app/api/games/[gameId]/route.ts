@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGameSession, getClues, getFigure } from '@/lib/game-sessions';
+import { getGameSession, getClues } from '@/lib/game-sessions';
 
 export async function GET(
     request: NextRequest,

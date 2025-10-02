@@ -1,6 +1,5 @@
 import { prisma } from './prisma';
 import { randomUUID } from 'crypto';
-import { Prisma } from '@prisma/client';
 
 export interface GameSession {
     id: string;
@@ -39,10 +38,6 @@ export type Difficulty = 'EASY' | 'NORMAL' | 'HARD';
 // 创建新游戏会话
 export async function createGameSession(figureId: number, allClueIds: number[]): Promise<string> {
     const gameId = randomUUID();
-
-    // 游戏开始时只揭示第一条线索
-    const initialRevealedClueIds = [allClueIds[0]];
-
     await prisma.gameSession.create({
         data: {
             id: gameId,
@@ -81,21 +76,6 @@ export async function getClues(clueIds: number[]): Promise<Clue[]> {
     const clues = await prisma.clue.findMany({
         where: {
             id: { in: clueIds },
-        },
-        orderBy: {
-            sequence: 'desc',
-        },
-    });
-
-    return clues;
-}
-
-// 获取人物所有线索
-export async function getAllCluesForFigure(figureId: number, difficulty: Difficulty): Promise<Clue[]> {
-    const clues = await prisma.clue.findMany({
-        where: {
-            figure_id: figureId,
-            difficulty: difficulty,
         },
         orderBy: {
             sequence: 'desc',
