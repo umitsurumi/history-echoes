@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
                 { status: 503 }
             );
         }
-
+        console.log('Creating game with settings:', body);
         // 从数据库选择历史人物
         const selectedFigure = await selectHistoricalFigure(body.timePeriod, body.region, body.difficulty);
 
