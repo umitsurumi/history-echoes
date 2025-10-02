@@ -109,7 +109,8 @@ export default function Loading() {
 
                 // 延迟后跳转到错误页面
                 setTimeout(() => {
-                    router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+                    const errorCode = 'GAME_CREATION_ERROR';
+                    router.push(`/error?message=${encodeURIComponent(errorMessage)}&errorCode=${encodeURIComponent(errorCode)}&retryUrl=${encodeURIComponent('/game-setup')}`);
                 }, 2000);
             }
         };

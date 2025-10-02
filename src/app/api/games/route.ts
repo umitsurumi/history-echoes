@@ -1,8 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createGameSession } from "@/lib/game-sessions";
 import { getWikipediaPage } from "@/lib/wiki-service";
 import { aiService } from "@/lib/ai-service";
+import {
+    ErrorCode,
+    createErrorResponse,
+    createSuccessResponse,
+    validateRequestParams,
+    validateEnumValue,
+} from "@/lib/errors";
 
 // 时间范围、地域、难度枚举
 type TimePeriod = "CLASSICAL" | "POST_CLASSICAL" | "EARLY_MODERN" | "MODERN";
@@ -15,27 +22,17 @@ interface GameRequest {
     difficulty: Difficulty;
 }
 
-// 自定义错误码
-enum ErrorCode {
-    NO_FIGURE_FOUND = "NO_FIGURE_FOUND",
-    WIKI_SERVICE_ERROR = "WIKI_SERVICE_ERROR",
-    AI_SERVICE_ERROR = "AI_SERVICE_ERROR",
-    DATABASE_ERROR = "DATABASE_ERROR",
-}
-
 export async function POST(request: NextRequest) {
     try {
         const body: GameRequest = await request.json();
 
         // 验证请求参数
-        if (!body.timePeriod || !body.region || !body.difficulty) {
-            return NextResponse.json(
-                {
-                    error: "Missing required parameters. 'timePeriod', 'region', and 'difficulty' are required.",
-                },
-                { status: 400 }
-            );
-        }
+        const validationError = validateRequestParams(body, [
+            "timePeriod",
+            "region",
+            "difficulty",
+        ]);
+        if (validationError) return validationError;
 
         // 验证枚举值
         const validTimePeriods: TimePeriod[] = [
@@ -47,32 +44,26 @@ export async function POST(request: NextRequest) {
         const validRegions: Region[] = ["ASIA", "EUROPE", "AMERICAS", "OTHER"];
         const validDifficulties: Difficulty[] = ["EASY", "NORMAL", "HARD"];
 
-        if (!validTimePeriods.includes(body.timePeriod)) {
-            return NextResponse.json(
-                {
-                    error: "Invalid timePeriod. Must be one of: CLASSICAL, POST_CLASSICAL, EARLY_MODERN, MODERN.",
-                },
-                { status: 400 }
-            );
-        }
+        const timePeriodError = validateEnumValue(
+            body.timePeriod,
+            validTimePeriods,
+            ErrorCode.INVALID_TIME_PERIOD
+        );
+        if (timePeriodError) return timePeriodError;
 
-        if (!validRegions.includes(body.region)) {
-            return NextResponse.json(
-                {
-                    error: "Invalid region. Must be one of: ASIA, EUROPE, AMERICAS, OTHER.",
-                },
-                { status: 400 }
-            );
-        }
+        const regionError = validateEnumValue(
+            body.region,
+            validRegions,
+            ErrorCode.INVALID_REGION
+        );
+        if (regionError) return regionError;
 
-        if (!validDifficulties.includes(body.difficulty)) {
-            return NextResponse.json(
-                {
-                    error: "Invalid difficulty. Must be one of: EASY, NORMAL, HARD.",
-                },
-                { status: 400 }
-            );
-        }
+        const difficultyError = validateEnumValue(
+            body.difficulty,
+            validDifficulties,
+            ErrorCode.INVALID_DIFFICULTY
+        );
+        if (difficultyError) return difficultyError;
 
         // 查找符合条件的人物
         const figures = await prisma.figure.findMany({
@@ -90,13 +81,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (figures.length === 0) {
-            return NextResponse.json(
-                {
-                    error: "未找到符合条件的历史人物",
-                    errorCode: ErrorCode.NO_FIGURE_FOUND,
-                },
-                { status: 404 }
-            );
+            return createErrorResponse(ErrorCode.NO_FIGURE_FOUND, 404);
         }
 
         // 随机选择一个符合条件的人物
@@ -171,25 +156,16 @@ export async function POST(request: NextRequest) {
                     error instanceof Error &&
                     error.message === ErrorCode.WIKI_SERVICE_ERROR
                 ) {
-                    return NextResponse.json(
-                        {
-                            error: "维基百科服务暂时不可用，请稍后再试。",
-                            errorCode: ErrorCode.WIKI_SERVICE_ERROR,
-                        },
-                        { status: 503 }
+                    return createErrorResponse(
+                        ErrorCode.WIKI_SERVICE_ERROR,
+                        503
                     );
                 }
                 if (
                     error instanceof Error &&
                     error.message.includes("AI_SERVICE")
                 ) {
-                    return NextResponse.json(
-                        {
-                            error: "谜题生成服务暂时不可用，请稍后再试。",
-                            errorCode: ErrorCode.AI_SERVICE_ERROR,
-                        },
-                        { status: 503 }
-                    );
+                    return createErrorResponse(ErrorCode.AI_SERVICE_ERROR, 503);
                 }
                 throw error;
             }
@@ -238,32 +214,16 @@ export async function POST(request: NextRequest) {
         );
 
         // 返回响应 - 只返回第一条线索
-        return NextResponse.json(
+        return createSuccessResponse(
             {
                 gameId,
                 revealedClues: [selectedClues[0].clue_text],
                 currentClueIndex: 0,
             },
-            { status: 201 }
+            201
         );
     } catch (error) {
         console.error("Error creating game:", error);
-
-        // 处理数据库错误
-        if (
-            error instanceof Error &&
-            error.message === ErrorCode.DATABASE_ERROR
-        ) {
-            return NextResponse.json(
-                { error: "数据库错误", errorCode: ErrorCode.DATABASE_ERROR },
-                { status: 500 }
-            );
-        }
-
-        // 默认错误处理
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return createErrorResponse(ErrorCode.DATABASE_ERROR, 500);
     }
 }

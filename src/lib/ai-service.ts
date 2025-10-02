@@ -50,7 +50,7 @@ export class AIService {
 
                 // 验证结果
                 this.validateGeneratedClues(result, figureName);
-                console.log("AI生成线索成功:", result);
+                console.debug("AI生成线索成功:", result);
                 return result;
             } catch (error) {
                 console.error(

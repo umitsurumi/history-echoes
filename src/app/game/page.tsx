@@ -73,7 +73,8 @@ export default function Game() {
                 console.error('游戏初始化失败:', error);
                 setHasError(true);
                 const errorMessage = error instanceof Error ? error.message : '未知错误';
-                router.push(`/error?message=${encodeURIComponent(errorMessage)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+                const errorCode = 'GAME_INIT_ERROR';
+                router.push(`/error?message=${encodeURIComponent(errorMessage)}&errorCode=${encodeURIComponent(errorCode)}&retryUrl=${encodeURIComponent('/game-setup')}`);
             }
         };
 
@@ -139,6 +140,12 @@ export default function Game() {
             console.error('提交答案失败:', error);
             const errorMsg = error instanceof Error ? error.message : '未知错误';
             setErrorMessage(errorMsg);
+            
+            // 如果是API错误，跳转到错误页面
+            if (errorMsg.includes('游戏会话') || errorMsg.includes('人物信息')) {
+                const errorCode = error instanceof Error && error.message.includes('游戏会话') ? 'GAME_SESSION_ERROR' : 'FIGURE_ERROR';
+                router.push(`/error?message=${encodeURIComponent(errorMsg)}&errorCode=${encodeURIComponent(errorCode)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -167,6 +174,12 @@ export default function Game() {
             console.error('放弃游戏失败:', error);
             const errorMsg = error instanceof Error ? error.message : '未知错误';
             setErrorMessage(errorMsg);
+            
+            // 如果是API错误，跳转到错误页面
+            if (errorMsg.includes('游戏会话') || errorMsg.includes('人物信息')) {
+                const errorCode = error instanceof Error && error.message.includes('游戏会话') ? 'GAME_SESSION_ERROR' : 'FIGURE_ERROR';
+                router.push(`/error?message=${encodeURIComponent(errorMsg)}&errorCode=${encodeURIComponent(errorCode)}&retryUrl=${encodeURIComponent('/game-setup')}`);
+            }
         }
     };
 

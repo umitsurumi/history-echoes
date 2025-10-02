@@ -7,8 +7,9 @@ export default function Error() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // 获取错误信息和重试参数
-    const errorMessage = searchParams.get('message') || '抱歉，似乎时空通讯暂时中断，我们未能获取到历史人物的信息。';
+    // 获取错误信息、错误码和重试参数
+    const errorMessage = searchParams.get('message') || "发生未知错误，请稍后重试。";
+    const errorCode = searchParams.get('errorCode') || 'UNKNOWN_EXCEPTION';
     const retryUrl = searchParams.get('retryUrl') || '/game-setup';
 
     const handleRetry = () => {
@@ -37,23 +38,33 @@ export default function Error() {
 
                             {/* 标题 */}
                             <h2 className="font-serif text-3xl text-slate-100 mb-4">
-                                谜题生成失败
+                                哎呀，出错了！
                             </h2>
 
                             {/* 错误信息 */}
                             <p className="text-slate-400 leading-relaxed mb-8">
-                                {errorMessage}
+                                似乎时空通讯暂时中断，请返回首页或稍后重试。
                             </p>
 
-                            {/* 错误详情（可选） */}
-                            <div className="bg-slate-900/30 border border-slate-700 rounded-lg p-3 mb-6 text-sm text-slate-400">
-                                <div className="flex items-center justify-center gap-2">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="12" y1="8" x2="12" y2="12" />
-                                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                                    </svg>
-                                    <span>错误代码: HIST-ERR-001</span>
+                            {/* 错误详情 */}
+                            <div className="bg-slate-900/30 border border-slate-700 rounded-lg p-4 mb-6 text-sm text-slate-400">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <line x1="12" y1="8" x2="12" y2="12" />
+                                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                                        </svg>
+                                        <span>错误代码: {errorCode}</span>
+                                    </div>
+                                    <div className="flex items-start justify-center gap-2 text-xs">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                                            <path d="M12 9v4" />
+                                            <path d="M12 17h.01" />
+                                        </svg>
+                                        <span className="text-center">错误信息: {errorMessage}</span>
+                                    </div>
                                 </div>
                             </div>
 
