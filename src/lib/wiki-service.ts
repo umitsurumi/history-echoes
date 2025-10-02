@@ -55,6 +55,7 @@ export async function getWikipediaPage(
         prop: "extracts|pageimages",
         explaintext: "true",
         pithumbsize: "500",
+        variant: "zh-cn",
         redirects: "1",
     });
 

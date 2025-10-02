@@ -65,17 +65,27 @@ export async function POST(request: NextRequest) {
         );
         if (difficultyError) return difficultyError;
 
+        // 根据难度确定基础难度筛选条件
+        let baseDifficultyFilter: Difficulty[] = [];
+        switch (body.difficulty) {
+            case "EASY":
+                baseDifficultyFilter = ["EASY"];
+                break;
+            case "NORMAL":
+                baseDifficultyFilter = ["EASY", "NORMAL"];
+                break;
+            case "HARD":
+                baseDifficultyFilter = ["EASY", "NORMAL", "HARD"];
+                break;
+        }
+
         // 查找符合条件的人物
         const figures = await prisma.figure.findMany({
             where: {
                 time_period: body.timePeriod,
                 region: body.region,
-            },
-            include: {
-                clues: {
-                    where: {
-                        difficulty: body.difficulty,
-                    },
+                base_difficulty: {
+                    in: baseDifficultyFilter,
                 },
             },
         });
@@ -132,6 +142,7 @@ export async function POST(request: NextRequest) {
                 await prisma.figure.update({
                     where: { id: randomFigure.id },
                     data: {
+                        name: wikiPage.title,
                         aliases: clues.aliases,
                         summary: clues.summary,
                         image_url: wikiPage.imageUrl,

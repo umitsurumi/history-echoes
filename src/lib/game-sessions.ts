@@ -20,6 +20,7 @@ export interface Figure {
     wiki_url: string;
     summary: string | null;
     image_url: string | null;
+    base_difficulty: string;
 }
 
 export interface Clue {

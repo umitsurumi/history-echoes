@@ -20,14 +20,16 @@ model Figure {
   time_period TimePeriod
   region      Region
   wiki_url    String   @db.VarChar(512) @unique
-  image_url     String?  @db.VarChar(512)  
-  summary     String?  @db.Text          
+  image_url     String?  @db.VarChar(512)
+  summary     String?  @db.Text
+  base_difficulty Difficulty @default(EASY)
   created_at  DateTime @default(now())
 
   clues Clue[]
   gameSessions GameSession[]
   @@map("figure")
   @@index([time_period, region])
+  @@index([base_difficulty])
 }
 
 model Clue {
