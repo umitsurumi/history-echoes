@@ -130,4 +130,4 @@
 - 前端：Nextjs + Typescript + TailwindCss
 - 后端：Nextjs API Routes
 - AI 服务：调用支持长上下文的大语言模型 API（如 OpenAI 的 GPT Google 的 Gemini 等）。
-- 数据库：PostgreSQL，用于存储用户数据（如果需要）和缓存生成的题库。
+- 数据库： Prisma + PostgreSQL，用于存储用户数据（如果需要）和缓存生成的题库。

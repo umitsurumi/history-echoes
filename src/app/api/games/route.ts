@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { createGameSession, getAllCluesForFigure } from '@/lib/game-sessions';
 
 // 时间范围、地域、难度枚举
@@ -17,106 +17,86 @@ interface GameRequest {
 async function selectHistoricalFigure(timePeriod: TimePeriod, region: Region, difficulty: Difficulty) {
     try {
         // 首先尝试完全匹配
-        const exactMatchQuery = `
-      SELECT f.id, f.name, f.aliases, f.time_period, f.region, f.wiki_url,
-             c.difficulty, c.sequence, c.clue_text, c.id as clue_id
-      FROM figures f
-      JOIN clues c ON f.id = c.figure_id
-      WHERE f.time_period = $1 AND f.region = $2 AND c.difficulty = $3
-      ORDER BY f.id, c.sequence
-    `;
-
-        const exactResult = await query(exactMatchQuery, [timePeriod, region, difficulty]);
-
-        if (exactResult.rows.length >= 10) {
-            // 找到完全匹配的人物，按人物ID分组
-            const figuresMap = new Map();
-            exactResult.rows.forEach(row => {
-                if (!figuresMap.has(row.id)) {
-                    figuresMap.set(row.id, {
-                        id: row.id,
-                        name: row.name,
-                        aliases: row.aliases,
-                        timePeriod: row.time_period,
-                        region: row.region,
-                        wikiUrl: row.wiki_url,
-                        clues: [],
-                        clueIds: []
-                    });
+        const figuresWithClues = await prisma.figure.findMany({
+            where: {
+                time_period: timePeriod,
+                region: region,
+                clues: {
+                    some: {
+                        difficulty: difficulty
+                    }
                 }
-                figuresMap.get(row.id).clues.push(row.clue_text);
-                figuresMap.get(row.id).clueIds.push(row.clue_id);
-            });
-
-            // 选择第一个完整的人物（有10条线索）
-            for (const [figureId, figure] of figuresMap) {
-                if (figure.clues.length === 10) {
-                    return {
-                        figureId: figure.id,
-                        figureName: figure.name,
-                        aliases: figure.aliases,
-                        clues: figure.clues,
-                        clueIds: figure.clueIds,
-                        timePeriod: figure.timePeriod,
-                        region: figure.region,
-                        difficulty: difficulty,
-                        summary: `人物简介待完善 - ${figure.name}`,
-                        imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        sourceURL: figure.wikiUrl
-                    };
+            },
+            include: {
+                clues: {
+                    where: {
+                        difficulty: difficulty
+                    },
+                    orderBy: {
+                        sequence: 'asc'
+                    }
                 }
             }
+        });
+
+        // 找到有完整10条线索的人物
+        const completeFigure = figuresWithClues.find((figure: any) =>
+            figure.clues.length === 10
+        );
+
+        if (completeFigure) {
+            return {
+                figureId: completeFigure.id,
+                figureName: completeFigure.name,
+                aliases: completeFigure.aliases,
+                clues: completeFigure.clues.map((clue: any) => clue.clue_text),
+                clueIds: completeFigure.clues.map((clue: any) => clue.id),
+                timePeriod: completeFigure.time_period,
+                region: completeFigure.region,
+                difficulty: difficulty,
+                summary: `人物简介待完善 - ${completeFigure.name}`,
+                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                sourceURL: completeFigure.wiki_url
+            };
         }
 
         // 如果没有完全匹配，放宽条件：只匹配时间和地域
-        const relaxedQuery = `
-      SELECT f.id, f.name, f.aliases, f.time_period, f.region, f.wiki_url,
-             c.difficulty, c.sequence, c.clue_text, c.id as clue_id
-      FROM figures f
-      JOIN clues c ON f.id = c.figure_id
-      WHERE f.time_period = $1 AND f.region = $2
-      ORDER BY f.id, c.sequence
-    `;
-
-        const relaxedResult = await query(relaxedQuery, [timePeriod, region]);
-
-        if (relaxedResult.rows.length >= 10) {
-            const figuresMap = new Map();
-            relaxedResult.rows.forEach(row => {
-                if (!figuresMap.has(row.id)) {
-                    figuresMap.set(row.id, {
-                        id: row.id,
-                        name: row.name,
-                        aliases: row.aliases,
-                        timePeriod: row.time_period,
-                        region: row.region,
-                        wikiUrl: row.wiki_url,
-                        clues: [],
-                        clueIds: []
-                    });
-                }
-                figuresMap.get(row.id).clues.push(row.clue_text);
-                figuresMap.get(row.id).clueIds.push(row.clue_id);
-            });
-
-            // 选择第一个完整的人物
-            for (const [figureId, figure] of figuresMap) {
-                if (figure.clues.length === 10) {
-                    return {
-                        figureId: figure.id,
-                        figureName: figure.name,
-                        aliases: figure.aliases,
-                        clues: figure.clues,
-                        clueIds: figure.clueIds,
-                        timePeriod: figure.timePeriod,
-                        region: figure.region,
-                        difficulty: difficulty,
-                        summary: `人物简介待完善 - ${figure.name}`,
-                        imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        sourceURL: figure.wikiUrl
-                    };
+        const relaxedFigures = await prisma.figure.findMany({
+            where: {
+                time_period: timePeriod,
+                region: region
+            },
+            include: {
+                clues: {
+                    where: {
+                        difficulty: difficulty
+                    },
+                    orderBy: {
+                        sequence: 'asc'
+                    }
                 }
             }
+        });
+
+        // 找到有完整10条线索的人物
+        const relaxedCompleteFigure = relaxedFigures.find((figure: any) =>
+            figure.clues.length === 10
+        );
+
+        if (relaxedCompleteFigure) {
+            return {
+                figureId: relaxedCompleteFigure.id,
+                figureName: relaxedCompleteFigure.name,
+                aliases: relaxedCompleteFigure.aliases,
+                clues: relaxedCompleteFigure.clues.map((clue: any) => clue.clue_text),
+                clueIds: relaxedCompleteFigure.clues.map((clue: any) => clue.id),
+                timePeriod: relaxedCompleteFigure.time_period,
+                region: relaxedCompleteFigure.region,
+                difficulty: difficulty,
+                summary: `人物简介待完善 - ${relaxedCompleteFigure.name}`,
+                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                sourceURL: relaxedCompleteFigure.wiki_url
+            };
         }
 
         // 如果还是没有，返回任意一个人物（使用模拟数据作为后备）

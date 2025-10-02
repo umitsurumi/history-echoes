@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Figure {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  aliases     String[] // PostgreSQL array type
+  time_period TimePeriod
+  region      Region
+  wiki_url    String   @db.VarChar(512) @unique
+  created_at  DateTime @default(now())
+
+  clues Clue[]
+  gameSessions GameSession[]
+  @@map("figure")
+  @@index([time_period, region])
+}
+
+model Clue {
+  id         Int       @id @default(autoincrement())
+  figure_id  Int
+  difficulty Difficulty
+  sequence   Int       // 1-10
+  clue_text  String    @db.Text
+  created_at DateTime  @default(now())
+
+  figure Figure @relation(fields: [figure_id], references: [id], onDelete: Cascade)
+  @@map("clue")
+  @@index([figure_id, difficulty, sequence])
+}
+
+model GameSession {
+  id                 String   @id @default(uuid())
+  figure_id          Int
+  revealed_clue_ids  Int[]
+  status             GameStatus @default(ACTIVE)
+  revealed_clue_count Int      @default(1)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  figure Figure @relation(fields: [figure_id], references: [id])
+
+  @@map("game_sessions")
+}
+
+enum TimePeriod {
+  CLASSICAL
+  POST_CLASSICAL
+  EARLY_MODERN
+  MODERN
+  @@map("time_period")
+}
+
+enum Region {
+  ASIA
+  EUROPE
+  AMERICAS
+  OTHER
+  @@map("region")
+}
+
+enum Difficulty {
+  EASY
+  NORMAL
+  HARD
+  @@map("difficulty")
+}
+
+enum GameStatus {
+  ACTIVE
+  CORRECT
+  GAME_OVER
+  ABANDONED
+  @@map("game_status")
+}

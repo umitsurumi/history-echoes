@@ -1,5 +1,6 @@
-import { query } from './db';
+import { prisma } from './prisma';
 import { randomUUID } from 'crypto';
+import { Prisma } from '@prisma/client';
 
 export interface GameSession {
     id: string;
@@ -30,132 +31,91 @@ export interface Clue {
     clue_text: string;
 }
 
+export type GameStatus = 'ACTIVE' | 'CORRECT' | 'GAME_OVER' | 'ABANDONED';
+export type TimePeriod = 'CLASSICAL' | 'POST_CLASSICAL' | 'EARLY_MODERN' | 'MODERN';
+export type Region = 'ASIA' | 'EUROPE' | 'AMERICAS' | 'OTHER';
+export type Difficulty = 'EASY' | 'NORMAL' | 'HARD';
+
 // 创建新游戏会话
 export async function createGameSession(figureId: number, revealedClueIds: number[]): Promise<string> {
     const gameId = randomUUID();
 
-    const insertQuery = `
-    INSERT INTO game_sessions (id, figure_id, revealed_clue_ids, status, revealed_clue_count)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id
-  `;
-
-    await query(insertQuery, [
-        gameId,
-        figureId,
-        revealedClueIds,
-        'ACTIVE',
-        revealedClueIds.length
-    ]);
+    await prisma.gameSession.create({
+        data: {
+            id: gameId,
+            figure_id: figureId,
+            revealed_clue_ids: revealedClueIds,
+            status: 'ACTIVE',
+            revealed_clue_count: revealedClueIds.length,
+        },
+    });
 
     return gameId;
 }
 
 // 获取游戏会话
 export async function getGameSession(gameId: string): Promise<GameSession | null> {
-    const selectQuery = `
-    SELECT id, figure_id, revealed_clue_ids, status, revealed_clue_count, created_at, updated_at
-    FROM game_sessions
-    WHERE id = $1
-  `;
+    const gameSession = await prisma.gameSession.findUnique({
+        where: { id: gameId },
+    });
 
-    const result = await query(selectQuery, [gameId]);
-
-    if (result.rows.length === 0) {
-        return null;
-    }
-
-    const row = result.rows[0];
-    return {
-        id: row.id,
-        figure_id: row.figure_id,
-        revealed_clue_ids: row.revealed_clue_ids,
-        status: row.status,
-        revealed_clue_count: row.revealed_clue_count,
-        created_at: row.created_at,
-        updated_at: row.updated_at
-    };
+    return gameSession;
 }
 
 // 获取人物信息
 export async function getFigure(figureId: number): Promise<Figure | null> {
-    const selectQuery = `
-    SELECT id, name, aliases, time_period, region, wiki_url
-    FROM figures
-    WHERE id = $1
-  `;
+    const figure = await prisma.figure.findUnique({
+        where: { id: figureId },
+    });
 
-    const result = await query(selectQuery, [figureId]);
-
-    if (result.rows.length === 0) {
-        return null;
-    }
-
-    const row = result.rows[0];
-    return {
-        id: row.id,
-        name: row.name,
-        aliases: row.aliases,
-        time_period: row.time_period,
-        region: row.region,
-        wiki_url: row.wiki_url
-    };
+    return figure;
 }
 
 // 获取线索信息
 export async function getClues(clueIds: number[]): Promise<Clue[]> {
     if (clueIds.length === 0) return [];
 
-    const placeholders = clueIds.map((_, index) => `$${index + 1}`).join(',');
-    const selectQuery = `
-    SELECT id, figure_id, difficulty, sequence, clue_text
-    FROM clues
-    WHERE id IN (${placeholders})
-    ORDER BY sequence
-  `;
+    const clues = await prisma.clue.findMany({
+        where: {
+            id: { in: clueIds },
+        },
+        orderBy: {
+            sequence: 'asc',
+        },
+    });
 
-    const result = await query(selectQuery, clueIds);
-    return result.rows.map(row => ({
-        id: row.id,
-        figure_id: row.figure_id,
-        difficulty: row.difficulty,
-        sequence: row.sequence,
-        clue_text: row.clue_text
-    }));
+    return clues;
 }
 
 // 获取人物所有线索
-export async function getAllCluesForFigure(figureId: number, difficulty: string): Promise<Clue[]> {
-    const selectQuery = `
-    SELECT id, figure_id, difficulty, sequence, clue_text
-    FROM clues
-    WHERE figure_id = $1 AND difficulty = $2
-    ORDER BY sequence
-  `;
+export async function getAllCluesForFigure(figureId: number, difficulty: Difficulty): Promise<Clue[]> {
+    const clues = await prisma.clue.findMany({
+        where: {
+            figure_id: figureId,
+            difficulty: difficulty,
+        },
+        orderBy: {
+            sequence: 'asc',
+        },
+    });
 
-    const result = await query(selectQuery, [figureId, difficulty]);
-    return result.rows.map(row => ({
-        id: row.id,
-        figure_id: row.figure_id,
-        difficulty: row.difficulty,
-        sequence: row.sequence,
-        clue_text: row.clue_text
-    }));
+    return clues;
 }
 
 // 更新游戏会话状态
 export async function updateGameSession(
     gameId: string,
     revealedClueIds: number[],
-    status: 'ACTIVE' | 'CORRECT' | 'GAME_OVER' | 'ABANDONED'
+    status: GameStatus
 ): Promise<void> {
-    const updateQuery = `
-    UPDATE game_sessions 
-    SET revealed_clue_ids = $1, status = $2, revealed_clue_count = $3, updated_at = NOW()
-    WHERE id = $4
-  `;
-
-    await query(updateQuery, [revealedClueIds, status, revealedClueIds.length, gameId]);
+    await prisma.gameSession.update({
+        where: { id: gameId },
+        data: {
+            revealed_clue_ids: revealedClueIds,
+            status: status,
+            revealed_clue_count: revealedClueIds.length,
+        },
+    });
 }
 
 // 答案标准化处理
@@ -179,5 +139,5 @@ export function isAnswerCorrect(figure: Figure, guess: string): boolean {
     }
 
     // 检查别名
-    return figure.aliases.some(alias => normalizeAnswer(alias) === normalizedGuess);
+    return figure.aliases.some((alias: string) => normalizeAnswer(alias) === normalizedGuess);
 }
