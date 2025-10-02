@@ -220,42 +220,44 @@
 
 ## DB设计
 
-### `figures` 表
+### `figure` 表
 
 - 用途: 存储人物索引库
 - SQL：
   
   ```sql
-  CREATE TABLE figures (
+  CREATE TABLE figure (
     id SERIAL PRIMARY KEY, -- 自增整数ID，用作内部关联
     name VARCHAR(255) NOT NULL, -- 人物姓名
     aliases TEXT[] NOT NULL, -- 别名数组，用于答案校验
     time_period VARCHAR(50) NOT NULL CHECK (time_period IN ('CLASSICAL', 'POST_CLASSICAL', 'EARLY_MODERN', 'MODERN')), -- 时间范围
     region VARCHAR(50) NOT NULL CHECK (region IN ('ASIA', 'EUROPE', 'AMERICAS', 'OTHER')), -- 地域范围
     wiki_url VARCHAR(512) UNIQUE NOT NULL, -- 维基百科链接
+    img_url VARCHAR(512) UNIQUE NOT NULL, -- 维基百科图像链接
+    summary VARCHAR(512), -- 人物小结
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
   );
   -- 为常用查询字段创建索引
-  CREATE INDEX idx_figures_filters ON figures (time_period, region);
+  CREATE INDEX idx_figures_filters ON figure (time_period, region);
   ```
 
-### `clues` 表
+### `clue` 表
 
 - 用途: 缓存由AI生成的谜题。
 
 - SQL：
 
   ```sql
-  CREATE TABLE clues (
+  CREATE TABLE clue (
       id SERIAL PRIMARY KEY,
-      figure_id INTEGER NOT NULL REFERENCES figures(id) ON DELETE CASCADE, -- 关联到人物表，如果人物被删除，其所有线索也会被删除
+      figure_id INTEGER NOT NULL REFERENCES figure(id) ON DELETE CASCADE, -- 关联到人物表，如果人物被删除，其所有线索也会被删除
       difficulty VARCHAR(50) NOT NULL CHECK (difficulty IN ('EASY', 'NORMAL', 'HARD')), -- 难度等级
       sequence SMALLINT NOT NULL CHECK (sequence >= 1 AND sequence <= 10), -- 线索序号 (1-10)
       clue_text TEXT NOT NULL, -- 线索内容
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
   );
   -- 为查询线索创建复合索引
-  CREATE INDEX idx_clues_lookup ON clues (figure_id, difficulty, sequence);
+  CREATE INDEX idx_clue_lookup ON clue (figure_id, difficulty, sequence);
   ```
 
 ### `game_sessions`
@@ -267,7 +269,7 @@
   ```sql
   CREATE TABLE game_sessions (
     id UUID PRIMARY KEY, -- 由后端应用生成的UUID
-    figure_id INTEGER NOT NULL REFERENCES figures(id), -- 本局游戏的目标人物
+    figure_id INTEGER NOT NULL REFERENCES figure(id), -- 本局游戏的目标人物
     -- 记录本局游戏中，应该按顺序揭示给玩家的具体线索ID列表
     revealed_clue_ids INTEGER[] NOT NULL,
     status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'CORRECT', 'GAME_OVER', 'ABANDONED')), -- 游戏状态

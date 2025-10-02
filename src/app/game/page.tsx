@@ -216,7 +216,7 @@ export default function Game() {
                                     <img
                                         src={figureInfo.imageUrl}
                                         alt="人物肖像"
-                                        className="rounded-lg object-cover w-full h-48 shadow-lg"
+                                        className="rounded-lg object-cover object-top w-full h-48 shadow-lg"
                                     />
                                     <h2 className="font-serif text-4xl text-slate-100">{figureInfo.name}</h2>
                                     <p className="text-slate-400 text-sm leading-relaxed">
@@ -294,7 +294,7 @@ export default function Game() {
                                     <img
                                         src={figureInfo.imageUrl}
                                         alt="人物肖像"
-                                        className="rounded-lg object-cover w-full h-48 shadow-lg"
+                                        className="rounded-lg object-cover object-top w-full h-48 shadow-lg"
                                     />
                                     <h2 className="font-serif text-4xl text-slate-100">{figureInfo.name}</h2>
                                     <p className="text-slate-400 text-sm leading-relaxed">

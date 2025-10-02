@@ -20,6 +20,8 @@ model Figure {
   time_period TimePeriod
   region      Region
   wiki_url    String   @db.VarChar(512) @unique
+  image_url     String?  @db.VarChar(512)  
+  summary     String?  @db.Text          
   created_at  DateTime @default(now())
 
   clues Clue[]

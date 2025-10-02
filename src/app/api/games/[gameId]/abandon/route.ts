@@ -32,6 +32,7 @@ export async function POST(
 
         // 获取人物信息
         const figure = await getFigure(gameSession.figure_id);
+        console.log(figure);
         if (!figure) {
             return NextResponse.json(
                 { error: "Figure not found." },
@@ -50,7 +51,7 @@ export async function POST(
             figure: {
                 name: figure.name,
                 summary: figure.summary || `人物简介待完善 - ${figure.name}`,
-                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                imageUrl: figure.image_url || "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
                 sourceURL: figure.wiki_url
             },
             allClues: allClues.map(clue => clue.clue_text),
