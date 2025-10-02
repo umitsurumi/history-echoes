@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
     getGameSession,
     getFigure,
-    getAllCluesForFigure,
+    getClues,
     updateGameSession
 } from '@/lib/game-sessions';
 
@@ -42,8 +42,8 @@ export async function POST(
         // 标记游戏为已放弃
         await updateGameSession(gameId, gameSession.revealed_clue_ids, 'ABANDONED');
 
-        // 获取所有线索
-        const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度
+        // 获取所有线索 - 从游戏会话中存储的线索ID获取
+        const allClues = await getClues(gameSession.revealed_clue_ids);
 
         return NextResponse.json({
             status: "ABANDONED",

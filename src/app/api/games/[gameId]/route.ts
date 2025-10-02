@@ -26,8 +26,9 @@ export async function GET(
             );
         }
 
-        // 获取已揭示的线索
-        const revealedClues = await getClues(gameSession.revealed_clue_ids);
+        // 获取已揭示的线索 - 根据 revealed_clue_count 从 revealed_clue_ids 中切片获取
+        const revealedClueIds = gameSession.revealed_clue_ids.slice(0, gameSession.revealed_clue_count);
+        const revealedClues = await getClues(revealedClueIds);
         const clueTexts = revealedClues.map(clue => clue.clue_text);
 
         // 返回游戏状态（按照技术文档要求的格式）

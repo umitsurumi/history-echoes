@@ -13,11 +13,18 @@ interface GameRequest {
     difficulty: Difficulty;
 }
 
-// 根据设置从数据库中选择合适的历史人物
+// 自定义错误码
+enum ErrorCode {
+    NO_FIGURE_FOUND = 'NO_FIGURE_FOUND',
+    INSUFFICIENT_CLUES = 'INSUFFICIENT_CLUES',
+    DATABASE_ERROR = 'DATABASE_ERROR'
+}
+
+// 根据设置从数据库中选择合适的历史人物并随机选择线索
 async function selectHistoricalFigure(timePeriod: TimePeriod, region: Region, difficulty: Difficulty) {
     try {
-        // 首先尝试完全匹配
-        const figuresWithClues = await prisma.figure.findMany({
+        // 查找符合条件的人物
+        const figures = await prisma.figure.findMany({
             where: {
                 time_period: timePeriod,
                 region: region,
@@ -31,81 +38,72 @@ async function selectHistoricalFigure(timePeriod: TimePeriod, region: Region, di
                 clues: {
                     where: {
                         difficulty: difficulty
-                    },
-                    orderBy: {
-                        sequence: 'desc'
                     }
                 }
             }
         });
 
-        // 找到有完整10条线索的人物
-        const completeFigure = figuresWithClues.find((figure: any) =>
-            figure.clues.length === 10
-        );
-
-        if (completeFigure) {
-            return {
-                figureId: completeFigure.id,
-                figureName: completeFigure.name,
-                aliases: completeFigure.aliases,
-                clues: completeFigure.clues.map((clue: any) => clue.clue_text),
-                clueIds: completeFigure.clues.map((clue: any) => clue.id),
-                timePeriod: completeFigure.time_period,
-                region: completeFigure.region,
-                difficulty: difficulty,
-                summary: `人物简介待完善 - ${completeFigure.name}`,
-                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                sourceURL: completeFigure.wiki_url
-            };
+        if (figures.length === 0) {
+            throw new Error(ErrorCode.NO_FIGURE_FOUND);
         }
 
-        // 如果没有完全匹配，放宽条件：只匹配时间和地域
-        const relaxedFigures = await prisma.figure.findMany({
-            where: {
-                time_period: timePeriod,
-                region: region
-            },
-            include: {
-                clues: {
-                    where: {
-                        difficulty: difficulty
-                    },
-                    orderBy: {
-                        sequence: 'desc'
-                    }
-                }
+        // 随机选择一个符合条件的人物
+        const randomFigure = figures[Math.floor(Math.random() * figures.length)];
+
+        // 检查该人物在该难度下是否有足够的线索（每个序号至少一个）
+        const cluesBySequence: { [key: number]: any[] } = {};
+        for (let i = 1; i <= 10; i++) {
+            cluesBySequence[i] = randomFigure.clues.filter((clue: any) => clue.sequence === i);
+        }
+
+        // 验证每个序号至少有一个线索
+        for (let i = 1; i <= 10; i++) {
+            if (cluesBySequence[i].length === 0) {
+                throw new Error(ErrorCode.INSUFFICIENT_CLUES);
             }
+        }
+
+        // 为每个序号随机选择一个线索
+        const selectedClues: any[] = [];
+        const selectedClueIds: number[] = [];
+        
+        for (let i = 1; i <= 10; i++) {
+            const cluesForSequence = cluesBySequence[i];
+            const randomClue = cluesForSequence[Math.floor(Math.random() * cluesForSequence.length)];
+            selectedClues.push(randomClue);
+            selectedClueIds.push(randomClue.id);
+        }
+
+        // 按序列号降序排列（10最晦涩，1最明显）
+        selectedClues.sort((a, b) => b.sequence - a.sequence);
+        selectedClueIds.sort((a, b) => {
+            const clueA = selectedClues.find(clue => clue.id === a);
+            const clueB = selectedClues.find(clue => clue.id === b);
+            return (clueB?.sequence || 0) - (clueA?.sequence || 0);
         });
 
-        // 找到有完整10条线索的人物
-        const relaxedCompleteFigure = relaxedFigures.find((figure: any) =>
-            figure.clues.length === 10
-        );
-
-        if (relaxedCompleteFigure) {
-            return {
-                figureId: relaxedCompleteFigure.id,
-                figureName: relaxedCompleteFigure.name,
-                aliases: relaxedCompleteFigure.aliases,
-                clues: relaxedCompleteFigure.clues.map((clue: any) => clue.clue_text),
-                clueIds: relaxedCompleteFigure.clues.map((clue: any) => clue.id),
-                timePeriod: relaxedCompleteFigure.time_period,
-                region: relaxedCompleteFigure.region,
-                difficulty: difficulty,
-                summary: `人物简介待完善 - ${relaxedCompleteFigure.name}`,
-                imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                sourceURL: relaxedCompleteFigure.wiki_url
-            };
-        }
-
-        // 如果还是没有找到合适的人物，抛出错误
-        throw new Error(`No suitable historical figure found for timePeriod: ${timePeriod}, region: ${region}, difficulty: ${difficulty}`);
+        return {
+            figureId: randomFigure.id,
+            figureName: randomFigure.name,
+            aliases: randomFigure.aliases,
+            clues: selectedClues.map((clue: any) => clue.clue_text),
+            clueIds: selectedClueIds,
+            timePeriod: randomFigure.time_period,
+            region: randomFigure.region,
+            difficulty: difficulty,
+            summary: `人物简介待完善 - ${randomFigure.name}`,
+            imageUrl: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            sourceURL: randomFigure.wiki_url
+        };
 
     } catch (error) {
         console.error('Error selecting historical figure from database:', error);
-        // 数据库错误时抛出异常
-        throw error;
+        // 如果是自定义错误，直接抛出
+        if (error instanceof Error && Object.values(ErrorCode).includes(error.message as ErrorCode)) {
+            throw error;
+        }
+        // 其他数据库错误
+        throw new Error(ErrorCode.DATABASE_ERROR);
     }
 }
 
@@ -161,11 +159,11 @@ export async function POST(request: NextRequest) {
         // 从数据库选择历史人物
         const selectedFigure = await selectHistoricalFigure(body.timePeriod, body.region, body.difficulty);
 
-        // 创建游戏会话并存储到数据库
+        // 创建游戏会话并存储到数据库 - 存储全部10条线索ID，但只揭示第一条
         const firstClueId = selectedFigure.clueIds[0];
-        const gameId = await createGameSession(selectedFigure.figureId, [firstClueId]);
+        const gameId = await createGameSession(selectedFigure.figureId, selectedFigure.clueIds);
 
-        // 返回响应
+        // 返回响应 - 只返回第一条线索
         return NextResponse.json(
             {
                 gameId,
@@ -178,6 +176,38 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('Error creating game:', error);
+        
+        // 处理自定义错误码
+        if (error instanceof Error) {
+            switch (error.message) {
+                case ErrorCode.NO_FIGURE_FOUND:
+                    return NextResponse.json(
+                        {
+                            error: "未找到符合条件的历史人物",
+                            errorCode: ErrorCode.NO_FIGURE_FOUND
+                        },
+                        { status: 404 }
+                    );
+                case ErrorCode.INSUFFICIENT_CLUES:
+                    return NextResponse.json(
+                        {
+                            error: "该人物在当前难度下线索不足",
+                            errorCode: ErrorCode.INSUFFICIENT_CLUES
+                        },
+                        { status: 422 }
+                    );
+                case ErrorCode.DATABASE_ERROR:
+                    return NextResponse.json(
+                        {
+                            error: "数据库错误",
+                            errorCode: ErrorCode.DATABASE_ERROR
+                        },
+                        { status: 500 }
+                    );
+            }
+        }
+
+        // 默认错误处理
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

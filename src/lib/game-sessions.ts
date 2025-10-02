@@ -37,16 +37,19 @@ export type Region = 'ASIA' | 'EUROPE' | 'AMERICAS' | 'OTHER';
 export type Difficulty = 'EASY' | 'NORMAL' | 'HARD';
 
 // 创建新游戏会话
-export async function createGameSession(figureId: number, revealedClueIds: number[]): Promise<string> {
+export async function createGameSession(figureId: number, allClueIds: number[]): Promise<string> {
     const gameId = randomUUID();
+
+    // 游戏开始时只揭示第一条线索
+    const initialRevealedClueIds = [allClueIds[0]];
 
     await prisma.gameSession.create({
         data: {
             id: gameId,
             figure_id: figureId,
-            revealed_clue_ids: revealedClueIds,
+            revealed_clue_ids: allClueIds, // 存储全部线索ID
             status: 'ACTIVE',
-            revealed_clue_count: revealedClueIds.length,
+            revealed_clue_count: 1, // 初始只揭示了一条线索
         },
     });
 
@@ -111,9 +114,20 @@ export async function updateGameSession(
     await prisma.gameSession.update({
         where: { id: gameId },
         data: {
-            revealed_clue_ids: revealedClueIds,
+            // 注意：这里不再更新 revealed_clue_ids，因为它在游戏初始化时已经固定
             status: status,
-            revealed_clue_count: revealedClueIds.length,
+        },
+    });
+}
+
+// 增加已揭示线索数量
+export async function incrementRevealedClueCount(gameId: string): Promise<void> {
+    await prisma.gameSession.update({
+        where: { id: gameId },
+        data: {
+            revealed_clue_count: {
+                increment: 1
+            }
         },
     });
 }

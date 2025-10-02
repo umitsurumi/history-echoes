@@ -5,6 +5,7 @@ import {
     getClues,
     getAllCluesForFigure,
     updateGameSession,
+    incrementRevealedClueCount,
     isAnswerCorrect
 } from '@/lib/game-sessions';
 
@@ -62,8 +63,8 @@ export async function POST(
             // 答案正确，游戏结束
             await updateGameSession(gameId, gameSession.revealed_clue_ids, 'CORRECT');
 
-            // 获取所有线索
-            const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度，后续可以根据实际难度调整
+            // 获取所有线索 - 从游戏会话中存储的线索ID获取
+            const allClues = await getClues(gameSession.revealed_clue_ids);
 
             return NextResponse.json({
                 status: "CORRECT",
@@ -79,17 +80,16 @@ export async function POST(
         } else {
             // 答案错误
             const nextClueIndex = gameSession.revealed_clue_count;
-            const allClues = await getAllCluesForFigure(gameSession.figure_id, 'EASY'); // 暂时使用EASY难度
 
-            if (nextClueIndex < allClues.length) {
+            // 检查是否还有更多线索
+            if (nextClueIndex < gameSession.revealed_clue_ids.length) {
                 // 还有更多线索，显示下一条
-                const nextClue = allClues[nextClueIndex];
-                const newRevealedClueIds = [...gameSession.revealed_clue_ids, nextClue.id];
+                // 增加已揭示线索数量
+                await incrementRevealedClueCount(gameId);
 
-                await updateGameSession(gameId, newRevealedClueIds, 'ACTIVE');
-
-                // 获取已揭示的线索文本
-                const revealedClues = await getClues(newRevealedClueIds);
+                // 获取当前已揭示的线索（前nextClueIndex+1条线索）
+                const revealedClueIds = gameSession.revealed_clue_ids.slice(0, nextClueIndex + 1);
+                const revealedClues = await getClues(revealedClueIds);
 
                 return NextResponse.json({
                     status: "INCORRECT",
@@ -99,6 +99,9 @@ export async function POST(
             } else {
                 // 所有线索都用完了，游戏结束
                 await updateGameSession(gameId, gameSession.revealed_clue_ids, 'GAME_OVER');
+
+                // 获取所有线索
+                const allClues = await getClues(gameSession.revealed_clue_ids);
 
                 return NextResponse.json({
                     status: "GAME_OVER",
