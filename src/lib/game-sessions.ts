@@ -80,7 +80,7 @@ export async function getClues(clueIds: number[]): Promise<Clue[]> {
             id: { in: clueIds },
         },
         orderBy: {
-            sequence: 'asc',
+            sequence: 'desc',
         },
     });
 
@@ -95,7 +95,7 @@ export async function getAllCluesForFigure(figureId: number, difficulty: Difficu
             difficulty: difficulty,
         },
         orderBy: {
-            sequence: 'asc',
+            sequence: 'desc',
         },
     });
 

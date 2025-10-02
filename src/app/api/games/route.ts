@@ -33,7 +33,7 @@ async function selectHistoricalFigure(timePeriod: TimePeriod, region: Region, di
                         difficulty: difficulty
                     },
                     orderBy: {
-                        sequence: 'asc'
+                        sequence: 'desc'
                     }
                 }
             }
@@ -72,7 +72,7 @@ async function selectHistoricalFigure(timePeriod: TimePeriod, region: Region, di
                         difficulty: difficulty
                     },
                     orderBy: {
-                        sequence: 'asc'
+                        sequence: 'desc'
                     }
                 }
             }
