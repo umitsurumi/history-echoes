@@ -14,7 +14,8 @@ import {
 } from "@/lib/errors";
 
 interface GuessRequest {
-    guess: string;
+    guess?: string;
+    action: "guess" | "skip";
 }
 
 export async function POST(
@@ -38,7 +39,7 @@ export async function POST(
         const body: GuessRequest = await request.json();
 
         // 验证请求参数
-        if (!body.guess) {
+        if (body.action === "guess" && !body.guess) {
             return createErrorResponse(ErrorCode.MISSING_GUESS, 400);
         }
 
@@ -50,7 +51,8 @@ export async function POST(
         }
 
         // 检查答案是否正确
-        const isCorrect = isAnswerCorrect(figure, body.guess);
+        const isCorrect =
+            body.action === "guess" && isAnswerCorrect(figure, body.guess!);
 
         if (isCorrect) {
             // 答案正确，游戏结束

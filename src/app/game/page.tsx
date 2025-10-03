@@ -112,7 +112,7 @@ function GameComponent() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ guess: userAnswer }),
+                body: JSON.stringify({ guess: userAnswer, action: "guess" }),
             });
 
             if (!response.ok) {
@@ -211,6 +211,49 @@ function GameComponent() {
                     )}&retryUrl=${encodeURIComponent("/game-setup")}`
                 );
             }
+        }
+    };
+
+    // 处理跳过
+    const handleSkip = async () => {
+        if (isSubmitting || !gameId) return;
+
+        setIsSubmitting(true);
+        setErrorMessage("");
+
+        try {
+            const response = await fetch(`/api/games/${gameId}/guess`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ action: "skip" }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "跳过失败");
+            }
+
+            const result: GameResponse = await response.json();
+
+            if (result.status === "INCORRECT") {
+                // 跳过成功，还有更多线索
+                setRevealedClues(result.revealedClues!);
+                setCurrentClueIndex(result.currentClueIndex);
+            } else if (result.status === "GAME_OVER") {
+                // 所有线索都用完了
+                setFigureInfo(result.figure!);
+                setAllClues(result.allClues!);
+                setGameState("failed");
+            }
+        } catch (error) {
+            console.error("跳过失败:", error);
+            const errorMsg =
+                error instanceof Error ? error.message : "未知错误";
+            setErrorMessage(errorMsg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -555,28 +598,54 @@ function GameComponent() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mt-4">
-                                <button
-                                    onClick={handleGiveUp}
-                                    disabled={isSubmitting}
-                                    className="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200 button-hover-effect disabled:opacity-50"
-                                >
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
+                            <div className="space-y-4 mt-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={handleGiveUp}
+                                        disabled={isSubmitting}
+                                        className="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200 button-hover-effect disabled:opacity-50"
                                     >
-                                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-                                        <line x1="4" y1="22" x2="4" y2="15" />
-                                    </svg>
-                                    <span>放弃</span>
-                                </button>
-
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                                            <line
+                                                x1="4"
+                                                y1="22"
+                                                x2="4"
+                                                y2="15"
+                                            />
+                                        </svg>
+                                        <span>放弃</span>
+                                    </button>
+                                    <button
+                                        onClick={handleSkip}
+                                        disabled={isSubmitting}
+                                        className="w-full bg-transparent border border-slate-500 hover:bg-slate-700/50 text-slate-300 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition duration-200 button-hover-effect disabled:opacity-50"
+                                    >
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        >
+                                            <path d="m5 12 7-7 7 7" />
+                                            <path d="M12 19V5" />
+                                        </svg>
+                                        <span>跳过</span>
+                                    </button>
+                                </div>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={

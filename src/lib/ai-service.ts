@@ -136,7 +136,6 @@ export class AIService {
      * 调用OpenAI API
      */
     private async callOpenAI(prompt: string, config: any): Promise<string> {
-        console.log("调用OpenAI API: ", JSON.stringify(config));
         const response = await fetch(`${config.baseUrl}/chat/completions`, {
             method: "POST",
             headers: {
