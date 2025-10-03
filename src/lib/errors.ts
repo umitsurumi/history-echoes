@@ -5,6 +5,7 @@ export enum ErrorCode {
     // 游戏相关错误
     GAME_NOT_FOUND = "GAME_NOT_FOUND",
     GAME_ENDED = "GAME_ENDED",
+    GAME_CREATION_ERROR = "GAME_CREATION_ERROR",
 
     // 人物相关错误
     NO_FIGURE_FOUND = "NO_FIGURE_FOUND",
@@ -27,6 +28,7 @@ export enum ErrorCode {
 const errorMessages: Record<ErrorCode, string> = {
     [ErrorCode.GAME_NOT_FOUND]: "游戏会话不存在或已结束。",
     [ErrorCode.GAME_ENDED]: "游戏会话已结束。",
+    [ErrorCode.GAME_CREATION_ERROR]: "游戏创建失败。",
     [ErrorCode.NO_FIGURE_FOUND]: "未找到符合条件的历史人物",
     [ErrorCode.FIGURE_NOT_FOUND]: "人物信息不存在。",
     [ErrorCode.WIKI_SERVICE_ERROR]: "维基百科服务暂时不可用，请稍后再试。",
@@ -47,6 +49,20 @@ export function createErrorResponse(
     return NextResponse.json(
         {
             error: errorMessages[errorCode],
+            errorCode,
+        },
+        { status }
+    );
+}
+
+export function createErrorResponseWithMessage(
+    errorMessage: string,
+    errorCode: ErrorCode,
+    status: number = 500
+) {
+    return NextResponse.json(
+        {
+            error: errorMessage,
             errorCode,
         },
         { status }

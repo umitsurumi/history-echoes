@@ -1,4 +1,5 @@
 import { AIConfig } from "./ai-config";
+import { ErrorCode } from "./errors";
 
 export interface GeneratedClues {
     figureName: string;
@@ -7,9 +8,14 @@ export interface GeneratedClues {
     summary: string;
 }
 
-export interface AIServiceError extends Error {
-    code: string;
-    retryable: boolean;
+export class AIServiceError extends Error {
+    code = ErrorCode.AI_SERVICE_ERROR.toString();
+    retryable = false;
+    constructor(message: string, code?: string, retryable?: boolean) {
+        super(message);
+        if (code) this.code = code;
+        if (retryable !== undefined) this.retryable = retryable;
+    }
 }
 
 /**
@@ -296,10 +302,7 @@ export class AIService {
         code: string,
         retryable: boolean
     ): AIServiceError {
-        const error = new Error(message) as AIServiceError;
-        error.code = code;
-        error.retryable = retryable;
-        return error;
+        return new AIServiceError(message, code, retryable);
     }
 
     /**
