@@ -15,11 +15,11 @@ datasource db {
 
 model Figure {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(255)
+  name        String   @db.VarChar(255) @unique
   aliases     String[] // PostgreSQL array type
   time_period TimePeriod
   region      Region
-  wiki_url    String   @db.VarChar(512) @unique
+  wiki_url    String?   @db.VarChar(512) 
   image_url     String?  @db.VarChar(512)
   summary     String?  @db.Text
   base_difficulty Difficulty @default(EASY)
