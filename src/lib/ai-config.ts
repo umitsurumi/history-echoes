@@ -2,12 +2,20 @@ export const AIConfig = {
     providers: {
         openai: {
             apiKey: process.env.OPENAI_API_KEY,
-            model: "gpt-4",
-            maxTokens: 2000,
+            baseUrl:
+                process.env.OPENAI_API_BASE_URL || "https://api.openai.com/v1",
+            model: process.env.OPENAI_MODEL || "gpt-4",
+            maxTokens: parseInt(process.env.OPENAI_MAX_TOKENS || "8192"),
+            temperature: parseFloat(process.env.OPENAI_TEMPERATURE || "0.5"),
         },
         gemini: {
             apiKey: process.env.GEMINI_API_KEY,
-            model: "gemini-2.5-flash",
+            baseUrl:
+                process.env.GEMINI_API_BASE_URL ||
+                "https://generativelanguage.googleapis.com/v1",
+            model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+            maxTokens: parseInt(process.env.GEMINI_MAX_TOKENS || "8192"),
+            temperature: parseFloat(process.env.GEMINI_TEMPERATURE || "0.5"),
         },
     },
     prompts: {

@@ -22,7 +22,7 @@ export class AIServiceError extends Error {
  * AI服务类 - 负责生成游戏线索
  */
 export class AIService {
-    private provider: "openai" | "gemini" = "gemini";
+    private provider: "openai" | "gemini" = "openai";
     private maxRetries = 3;
     private retryDelay = 1000;
 
@@ -56,7 +56,7 @@ export class AIService {
 
                 // 验证结果
                 this.validateGeneratedClues(result, figureName);
-                console.debug("AI生成线索成功:", result);
+                // console.debug("AI生成线索成功:", result);
                 return result;
             } catch (error) {
                 console.error(
@@ -136,28 +136,26 @@ export class AIService {
      * 调用OpenAI API
      */
     private async callOpenAI(prompt: string, config: any): Promise<string> {
-        const response = await fetch(
-            "https://api.openai.com/v1/chat/completions",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${config.apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: config.model,
-                    messages: [
-                        {
-                            role: "user",
-                            content: prompt,
-                        },
-                    ],
-                    max_tokens: config.maxTokens,
-                    temperature: 0.7,
-                }),
-            }
-        );
-
+        console.log("调用OpenAI API: ", JSON.stringify(config));
+        const response = await fetch(`${config.baseUrl}/chat/completions`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${config.apiKey}`,
+            },
+            body: JSON.stringify({
+                model: config.model,
+                messages: [
+                    {
+                        role: "user",
+                        content: prompt,
+                    },
+                ],
+                max_tokens: config.maxTokens,
+                temperature: config.temperature,
+            }),
+        });
+        // console.debug("OpenAI API响应状态:", JSON.stringify(response));
         if (!response.ok) {
             throw this.createAIServiceError(
                 `OpenAI API错误: ${response.statusText}`,
@@ -175,7 +173,7 @@ export class AIService {
      */
     private async callGemini(prompt: string, config: any): Promise<string> {
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/${config.model}:generateContent?key=${config.apiKey}`,
+            `${config.baseUrl}/models/${config.model}:generateContent?key=${config.apiKey}`,
             {
                 method: "POST",
                 headers: {
@@ -192,7 +190,7 @@ export class AIService {
                         },
                     ],
                     generationConfig: {
-                        temperature: 0.7,
+                        temperature: config.temperature,
                         maxOutputTokens: config.maxTokens,
                     },
                 }),
@@ -208,6 +206,7 @@ export class AIService {
         }
 
         const data = await response.json();
+        // console.debug("Gemini API响应数据:", JSON.stringify(data));
         return data.candidates[0]?.content?.parts[0]?.text || "";
     }
 

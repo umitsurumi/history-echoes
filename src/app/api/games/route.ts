@@ -12,7 +12,7 @@ import {
     validateEnumValue,
 } from "@/lib/errors";
 import { Clue, Figure } from "@prisma/client";
-import { s2t } from "chinese-s2t";
+import { t2s } from "chinese-s2t";
 
 // 时间范围、地域、难度枚举
 type TimePeriod = "CLASSICAL" | "POST_CLASSICAL" | "EARLY_MODERN" | "MODERN";
@@ -240,7 +240,7 @@ async function updateLocalFigureInfo(
     await prisma.figure.update({
         where: { id: id },
         data: {
-            name: s2t(wikiPage.title),
+            name: t2s(wikiPage.title),
             aliases: aiResult.aliases,
             summary: aiResult.summary,
             image_url: wikiPage.imageUrl,
