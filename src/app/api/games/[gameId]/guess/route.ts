@@ -44,6 +44,7 @@ export async function POST(
 
         // 获取人物信息
         const figure = await getFigure(gameSession.figure_id);
+        console.debug("查询到人物信息：", figure);
         if (!figure) {
             return createErrorResponse(ErrorCode.FIGURE_NOT_FOUND, 500);
         }

@@ -12,6 +12,7 @@ import {
     validateEnumValue,
 } from "@/lib/errors";
 import { Clue, Figure } from "@prisma/client";
+import { s2t } from "chinese-s2t";
 
 // 时间范围、地域、难度枚举
 type TimePeriod = "CLASSICAL" | "POST_CLASSICAL" | "EARLY_MODERN" | "MODERN";
@@ -234,12 +235,12 @@ async function updateLocalFigureInfo(
         wikiPage.extract,
         wikiPage.wikiUrl
     );
-
+    aiResult.aliases.unshift(aiResult.figureName);
     // 更新人物信息
     await prisma.figure.update({
         where: { id: id },
         data: {
-            name: wikiPage.title,
+            name: s2t(wikiPage.title),
             aliases: aiResult.aliases,
             summary: aiResult.summary,
             image_url: wikiPage.imageUrl,

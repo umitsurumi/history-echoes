@@ -72,9 +72,9 @@ export async function getGameSession(
 
 // 获取人物信息
 export async function getFigure(figureId: number): Promise<Figure | null> {
-    const figure = await prisma.figure.findUnique({
+    const figure = (await prisma.figure.findUnique({
         where: { id: figureId },
-    });
+    })) as Figure | null;
 
     return figure;
 }
