@@ -55,6 +55,7 @@ npm install
     DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
 
     # AI 提供商配置 (示例)
+    AI_PROVIDER="openai"
     OPENAI_API_KEY="your-openai-api-key-here"
     OPENAI_API_BASE_URL="<https://api.deepseek.com/v1>"
     OPENAI_MODEL="deepseek-chat"
@@ -62,8 +63,8 @@ npm install
     OPENAI_TEMPERATURE="0.5"
     ```
 
-    > [!NOTE]  
-    > MAX_TOKENS 配置过短时，可能出现回答截断不能生成完整 JSON 响应的情况。
+> [!NOTE]  
+> MAX_TOKENS 配置过短时，可能出现回答截断不能生成完整 JSON 响应的情况。
 
 ### 数据库迁移
 
@@ -91,8 +92,8 @@ npx prisma studio
 
 2. **执行 SQL 脚本**。将 [`docs/figure.sql`](docs/figure.sql) 文件中的内容复制并执行，即可将数百位预设的历史人物导入到你的 `Figure` 表中。
 
-    > [!IMPORTANT]
-    > `figure.sql` 脚本默认操作的表名为 `Figure`。如果你的 Prisma Schema 中定义的表名不同，请相应修改脚本。
+> [!IMPORTANT]
+> `figure.sql` 脚本默认操作的表名为 `Figure`。如果你的 Prisma Schema 中定义的表名不同，请相应修改脚本。
 
 ### 运行开发服务器
 

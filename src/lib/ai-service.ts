@@ -22,15 +22,9 @@ export class AIServiceError extends Error {
  * AI服务类 - 负责生成游戏线索
  */
 export class AIService {
-    private provider: "openai" | "gemini" = "openai";
+    private provider: "openai" | "gemini" = AIConfig.provider;
     private maxRetries = 3;
     private retryDelay = 1000;
-
-    constructor(provider?: "openai" | "gemini") {
-        if (provider && AIConfig.providers[provider]) {
-            this.provider = provider;
-        }
-    }
 
     /**
      * 生成历史人物的线索

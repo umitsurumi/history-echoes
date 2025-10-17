@@ -1,4 +1,5 @@
 export const AIConfig = {
+    provider: (process.env.AI_PROVIDER || "openai") as "openai" | "gemini",
     providers: {
         openai: {
             apiKey: process.env.OPENAI_API_KEY,
