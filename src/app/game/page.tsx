@@ -299,14 +299,23 @@ function GameComponent() {
                             <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                 {/* 人物信息区域 */}
                                 <div className="space-y-4 animate-fade-in animation-delay-200">
-                                    <img
-                                        src={figureInfo.imageUrl}
-                                        alt="人物肖像"
-                                        className="rounded-lg object-cover object-top w-full h-48 shadow-lg"
-                                    />
-                                    <h2 className="font-serif text-4xl text-slate-100">
-                                        {figureInfo.name}
-                                    </h2>
+                                    <div className="character-image-container">
+                                        <img
+                                            src={figureInfo.imageUrl}
+                                            alt="人物肖像"
+                                            className="character-image"
+                                        />
+                                    </div>
+                                    <a
+                                        href={figureInfo.sourceURL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-amber-300 transition-colors"
+                                    >
+                                        <h2 className="font-serif text-4xl text-slate-100">
+                                            {figureInfo.name}
+                                        </h2>
+                                    </a>
                                     <p className="text-slate-400 text-sm leading-relaxed">
                                         {figureInfo.summary}
                                     </p>
@@ -411,14 +420,23 @@ function GameComponent() {
                             <div className="my-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                                 {/* 人物信息区域 */}
                                 <div className="space-y-4 animate-fade-in animation-delay-200">
-                                    <img
-                                        src={figureInfo.imageUrl}
-                                        alt="人物肖像"
-                                        className="rounded-lg object-cover object-top w-full h-48 shadow-lg"
-                                    />
-                                    <h2 className="font-serif text-4xl text-slate-100">
-                                        {figureInfo.name}
-                                    </h2>
+                                    <div className="character-image-container">
+                                        <img
+                                            src={figureInfo.imageUrl}
+                                            alt="人物肖像"
+                                            className="character-image"
+                                        />
+                                    </div>
+                                    <a
+                                        href={figureInfo.sourceURL}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-indigo-300 transition-colors"
+                                    >
+                                        <h2 className="font-serif text-4xl text-slate-100">
+                                            {figureInfo.name}
+                                        </h2>
+                                    </a>
                                     <p className="text-slate-400 text-sm leading-relaxed">
                                         {figureInfo.summary}
                                     </p>
